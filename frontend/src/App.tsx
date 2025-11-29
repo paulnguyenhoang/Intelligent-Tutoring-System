@@ -4,7 +4,7 @@ import { Layout, Menu } from "antd";
 import { useAuth } from "./hooks";
 import { ROUTES } from "./constants";
 
-const { Content, Footer } = Layout;
+const { Content } = Layout;
 
 const App = () => {
   const { user, logout } = useAuth();
@@ -14,6 +14,14 @@ const App = () => {
   useEffect(() => {
     // Force re-render when location changes
   }, [location]);
+
+  // Check if current route is Sign In or Sign Up
+  const isAuthPage = location.pathname === ROUTES.SIGN_IN || location.pathname === ROUTES.SIGN_UP;
+
+  // If auth page, render without Layout
+  if (isAuthPage) {
+    return <Outlet />;
+  }
 
   return (
     <Layout className="min-h-screen">
@@ -59,7 +67,6 @@ const App = () => {
         </div>
         <Outlet />
       </Content>
-      <Footer style={{ textAlign: "center" }}>ITS - Frontend exercise</Footer>
     </Layout>
   );
 };
