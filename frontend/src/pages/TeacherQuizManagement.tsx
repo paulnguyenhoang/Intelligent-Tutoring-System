@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react";
-import { Button, Card, List, Popconfirm, message, Modal, Form, Input, Space } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import type { Quiz, Question } from "../types";
-import { getQuizzes, createQuiz, updateQuiz, deleteQuiz } from "../services/quizService";
+import { Button, Card, List, Popconfirm, message, Modal, Space, Tag, Typography } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  ClockCircleOutlined,
+  TrophyOutlined,
+} from "@ant-design/icons";
+import type { Quiz } from "../types";
+import { getQuizzes, createQuiz, deleteQuiz, updateQuiz } from "../services/quizService";
+import CreateQuizModal from "../components/CreateQuizModal";
+import EditQuizModal from "../components/EditQuizModal";
 import styles from "./TeacherQuizManagement.module.less";
+
+const { Text } = Typography;
 
 export default function TeacherQuizManagement() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -11,7 +22,6 @@ export default function TeacherQuizManagement() {
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
-  const [form] = Form.useForm();
 
   const loadQuizzes = () => {
     setQuizzes(getQuizzes());
@@ -21,60 +31,19 @@ export default function TeacherQuizManagement() {
     loadQuizzes();
   }, []);
 
-  const handleCreate = async () => {
-    try {
-      const values = await form.validateFields();
-      const questions: Question[] = values.questions.map((q: any, idx: number) => ({
-        id: `q${idx + 1}`,
-        text: q.text,
-        options: q.options
-          .split("\n")
-          .map((o: string) => o.trim())
-          .filter(Boolean),
-        answerIndex: parseInt(q.answerIndex),
-      }));
-
-      createQuiz({
-        title: values.title,
-        questions,
-      });
-
-      message.success("Quiz created successfully!");
-      form.resetFields();
-      setOpenCreate(false);
-      loadQuizzes();
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
+  const handleCreate = (values: Omit<Quiz, "id">) => {
+    createQuiz(values);
+    message.success("Quiz created successfully!");
+    setOpenCreate(false);
+    loadQuizzes();
   };
 
-  const handleEdit = async () => {
-    if (!selectedQuiz) return;
-    try {
-      const values = await form.validateFields();
-      const questions: Question[] = values.questions.map((q: any, idx: number) => ({
-        id: `q${idx + 1}`,
-        text: q.text,
-        options: q.options
-          .split("\n")
-          .map((o: string) => o.trim())
-          .filter(Boolean),
-        answerIndex: parseInt(q.answerIndex),
-      }));
-
-      updateQuiz(selectedQuiz.id, {
-        title: values.title,
-        questions,
-      });
-
-      message.success("Quiz updated successfully!");
-      form.resetFields();
-      setOpenEdit(false);
-      setSelectedQuiz(null);
-      loadQuizzes();
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
+  const handleEdit = (id: string, values: Omit<Quiz, "id">) => {
+    updateQuiz(id, values);
+    message.success("Quiz updated successfully!");
+    setOpenEdit(false);
+    setSelectedQuiz(null);
+    loadQuizzes();
   };
 
   const handleDelete = (id: string) => {
@@ -85,14 +54,6 @@ export default function TeacherQuizManagement() {
 
   const openEditModal = (quiz: Quiz) => {
     setSelectedQuiz(quiz);
-    form.setFieldsValue({
-      title: quiz.title,
-      questions: quiz.questions.map((q) => ({
-        text: q.text,
-        options: q.options.join("\n"),
-        answerIndex: q.answerIndex.toString(),
-      })),
-    });
     setOpenEdit(true);
   };
 
@@ -112,7 +73,9 @@ export default function TeacherQuizManagement() {
         }
       >
         {quizzes.length === 0 ? (
-          <p className={styles.empty}>No quizzes yet. Create one to get started!</p>
+          <div className={styles.emptyState}>
+            <Text type="secondary">No quizzes yet. Create one to get started!</Text>
+          </div>
         ) : (
           <List
             dataSource={quizzes}
@@ -139,8 +102,25 @@ export default function TeacherQuizManagement() {
                 ]}
               >
                 <List.Item.Meta
-                  title={quiz.title}
-                  description={`${quiz.questions.length} questions`}
+                  title={
+                    <Text strong style={{ fontSize: 16 }}>
+                      {quiz.title}
+                    </Text>
+                  }
+                  description={
+                    <Space direction="vertical" size={4}>
+                      {quiz.description && <Text type="secondary">{quiz.description}</Text>}
+                      <Space size={16}>
+                        <Tag icon={<ClockCircleOutlined />} color="blue">
+                          {quiz.timeLimit || 30} mins
+                        </Tag>
+                        <Tag icon={<TrophyOutlined />} color="green">
+                          Pass: {quiz.passingScore || 70}%
+                        </Tag>
+                        <Tag color="purple">{quiz.questions.length} Questions</Tag>
+                      </Space>
+                    </Space>
+                  }
                 />
               </List.Item>
             )}
@@ -149,151 +129,11 @@ export default function TeacherQuizManagement() {
       </Card>
 
       {/* Create Quiz Modal */}
-      <Modal
-        title="Create New Quiz"
+      <CreateQuizModal
         open={openCreate}
-        onOk={handleCreate}
-        onCancel={() => {
-          setOpenCreate(false);
-          form.resetFields();
-        }}
-        width={700}
-        destroyOnClose
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Quiz Title" rules={[{ required: true }]}>
-            <Input placeholder="Enter quiz title" />
-          </Form.Item>
-
-          <Form.List name="questions" initialValue={[{}]}>
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }, index) => (
-                  <Card
-                    key={key}
-                    size="small"
-                    title={`Question ${index + 1}`}
-                    className={styles.questionCard}
-                  >
-                    <Form.Item
-                      {...restField}
-                      name={[name, "text"]}
-                      label="Question"
-                      rules={[{ required: true, message: "Please enter question text" }]}
-                    >
-                      <Input.TextArea rows={2} placeholder="Enter question" />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "options"]}
-                      label="Options (one per line)"
-                      rules={[{ required: true, message: "Please enter options" }]}
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Option 1&#10;Option 2&#10;Option 3&#10;Option 4"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "answerIndex"]}
-                      label="Correct Answer Index (0-based)"
-                      rules={[{ required: true, message: "Please enter answer index" }]}
-                    >
-                      <Input placeholder="e.g., 0 for first option, 1 for second" />
-                    </Form.Item>
-
-                    {fields.length > 1 && (
-                      <Button danger onClick={() => remove(name)}>
-                        Remove Question
-                      </Button>
-                    )}
-                  </Card>
-                ))}
-                <Button type="dashed" onClick={() => add()} block>
-                  + Add Question
-                </Button>
-              </>
-            )}
-          </Form.List>
-        </Form>
-      </Modal>
-
-      {/* Edit Quiz Modal */}
-      <Modal
-        title="Edit Quiz"
-        open={openEdit}
-        onOk={handleEdit}
-        onCancel={() => {
-          setOpenEdit(false);
-          setSelectedQuiz(null);
-          form.resetFields();
-        }}
-        width={700}
-        destroyOnClose
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Quiz Title" rules={[{ required: true }]}>
-            <Input placeholder="Enter quiz title" />
-          </Form.Item>
-
-          <Form.List name="questions">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }, index) => (
-                  <Card
-                    key={key}
-                    size="small"
-                    title={`Question ${index + 1}`}
-                    className={styles.questionCard}
-                  >
-                    <Form.Item
-                      {...restField}
-                      name={[name, "text"]}
-                      label="Question"
-                      rules={[{ required: true, message: "Please enter question text" }]}
-                    >
-                      <Input.TextArea rows={2} placeholder="Enter question" />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "options"]}
-                      label="Options (one per line)"
-                      rules={[{ required: true, message: "Please enter options" }]}
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Option 1&#10;Option 2&#10;Option 3&#10;Option 4"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "answerIndex"]}
-                      label="Correct Answer Index (0-based)"
-                      rules={[{ required: true, message: "Please enter answer index" }]}
-                    >
-                      <Input placeholder="e.g., 0 for first option, 1 for second" />
-                    </Form.Item>
-
-                    {fields.length > 1 && (
-                      <Button danger onClick={() => remove(name)}>
-                        Remove Question
-                      </Button>
-                    )}
-                  </Card>
-                ))}
-                <Button type="dashed" onClick={() => add()} block>
-                  + Add Question
-                </Button>
-              </>
-            )}
-          </Form.List>
-        </Form>
-      </Modal>
+        onCancel={() => setOpenCreate(false)}
+        onSubmit={handleCreate}
+      />
 
       {/* View Quiz Modal */}
       <Modal
@@ -304,27 +144,81 @@ export default function TeacherQuizManagement() {
           setSelectedQuiz(null);
         }}
         footer={null}
-        width={700}
+        width={800}
       >
         {selectedQuiz && (
-          <Space direction="vertical" style={{ width: "100%" }}>
+          <Space direction="vertical" style={{ width: "100%" }} size={16}>
+            {selectedQuiz.description && (
+              <div>
+                <Text strong>Description: </Text>
+                <Text>{selectedQuiz.description}</Text>
+              </div>
+            )}
+
+            <Space>
+              <Tag icon={<ClockCircleOutlined />} color="blue">
+                Time Limit: {selectedQuiz.timeLimit || 30} minutes
+              </Tag>
+              <Tag icon={<TrophyOutlined />} color="green">
+                Passing Score: {selectedQuiz.passingScore || 70}%
+              </Tag>
+            </Space>
+
             {selectedQuiz.questions.map((q, idx) => (
-              <Card key={q.id} size="small" title={`Question ${idx + 1}`}>
+              <Card
+                key={q.id}
+                size="small"
+                title={`Question ${idx + 1}`}
+                className={styles.viewQuestionCard}
+              >
                 <p>
-                  <strong>{q.text}</strong>
+                  <strong>{q.content}</strong>
                 </p>
-                <ul>
-                  {q.options.map((opt, i) => (
-                    <li key={i} style={{ color: i === q.answerIndex ? "green" : "inherit" }}>
-                      {opt} {i === q.answerIndex && <strong>(Correct)</strong>}
-                    </li>
-                  ))}
-                </ul>
+
+                <div style={{ marginTop: 12 }}>
+                  <Text strong>Options:</Text>
+                  <ul style={{ marginTop: 8 }}>
+                    {Object.entries(q.options).map(([key, value]) => (
+                      <li
+                        key={key}
+                        style={{ color: key === q.correctAnswer ? "green" : "inherit" }}
+                      >
+                        <strong>{key}:</strong> {value}{" "}
+                        {key === q.correctAnswer && <Tag color="success">Correct</Tag>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {q.hint && (
+                  <div style={{ marginTop: 12 }}>
+                    <Text strong>Hint: </Text>
+                    <Text type="secondary">{q.hint}</Text>
+                  </div>
+                )}
+
+                {q.feedback && (
+                  <div style={{ marginTop: 8 }}>
+                    <Text strong>Feedback: </Text>
+                    <Text type="secondary">{q.feedback}</Text>
+                  </div>
+                )}
               </Card>
             ))}
           </Space>
         )}
       </Modal>
+
+      {/* Edit Quiz Modal */}
+      <EditQuizModal
+        open={openEdit}
+        onCancel={() => {
+          setOpenEdit(false);
+          setSelectedQuiz(null);
+        }}
+        onSubmit={handleEdit}
+        quiz={selectedQuiz}
+      />
     </div>
   );
 }

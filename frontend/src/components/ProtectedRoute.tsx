@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { UserRole } from "../types";
+import type { UserRole } from "../types";
 import { STORAGE_KEYS, ROUTES } from "../constants";
 import { parseJSON } from "../utils";
 

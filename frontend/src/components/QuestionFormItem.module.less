@@ -1,0 +1,133 @@
+.questionCard {
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  max-width: 100%;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  :global {
+    .ant-card-head {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-bottom: 2px solid #e9ecef;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .ant-card-body {
+      padding: 24px;
+      overflow: hidden;
+    }
+  }
+}
+
+.questionTextArea {
+  font-size: 15px;
+  border-radius: 6px;
+
+  &:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  }
+}
+
+.optionsSection {
+  margin: 20px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  :global {
+    .ant-form-item {
+      margin-bottom: 0;
+    }
+
+    .ant-input {
+      border-radius: 6px;
+
+      &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+}
+
+.radioGroup {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  :global {
+    .ant-radio-button-wrapper {
+      height: 40px;
+      line-height: 38px;
+      padding: 0 24px;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      margin: 0;
+      flex-shrink: 0;
+
+      &:hover {
+        color: #667eea;
+      }
+
+      &.ant-radio-button-wrapper-checked {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+
+        &:hover {
+          background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+      }
+    }
+  }
+}
+
+.advancedSettings {
+  margin-top: 16px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+
+  :global {
+    .ant-collapse-header {
+      padding: 12px 16px !important;
+
+      &:hover {
+        background: #f8f9fa;
+        border-radius: 6px;
+      }
+    }
+
+    .ant-collapse-content-box {
+      padding: 16px !important;
+    }
+  }
+}
+
+.advancedContent {
+  :global {
+    .ant-form-item-label > label {
+      font-weight: 600;
+    }
+
+    textarea {
+      border-radius: 6px;
+
+      &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+}

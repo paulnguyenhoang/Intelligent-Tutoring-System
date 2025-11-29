@@ -1,29 +1,48 @@
-import { Quiz, Question, QuizResult } from "../types";
+import type { Quiz, Question, QuizResult, LegacyQuestion, LegacyQuiz } from "../types";
 import { STORAGE_KEYS } from "../constants";
 import { parseJSON } from "../utils";
 
 export const sampleQuiz: Quiz = {
   id: "sample-1",
   title: "Sample Quiz: Basic Knowledge",
+  description: "A sample quiz to demonstrate the new format",
+  timeLimit: 30,
+  passingScore: 70,
   questions: [
-    { id: "q1", text: "What is 2 + 2?", options: ["3", "4", "5", "6"], answerIndex: 1 },
+    {
+      id: "q1",
+      content: "What is 2 + 2?",
+      options: { A: "3", B: "4", C: "5", D: "6" },
+      correctAnswer: "B",
+      hint: "Think about basic addition",
+      feedback: "2 + 2 equals 4",
+    },
     {
       id: "q2",
-      text: "React is a...",
-      options: ["Database", "Library", "OS", "Language"],
-      answerIndex: 1,
+      content: "React is a...",
+      options: { A: "Database", B: "Library", C: "OS", D: "Language" },
+      correctAnswer: "B",
+      hint: "It's used for building user interfaces",
+      feedback: "React is a JavaScript library for building UIs",
     },
     {
       id: "q3",
-      text: "HTML stands for?",
-      options: ["HyperText", "HyperTool", "Hyperlink"],
-      answerIndex: 0,
+      content: "HTML stands for?",
+      options: { A: "HyperText Markup Language", B: "HyperTool", C: "Hyperlink", D: "None" },
+      correctAnswer: "A",
     },
-  ].map((q, i) => ({ ...q, id: q.id || `q${i}` })),
+  ],
 };
 
 export function getQuizzes(): Quiz[] {
-  return parseJSON<Quiz[]>(localStorage.getItem(STORAGE_KEYS.QUIZZES), []);
+  const stored = parseJSON<Quiz[]>(localStorage.getItem(STORAGE_KEYS.QUIZZES), []);
+
+  // If no quizzes, return sample quiz
+  if (stored.length === 0) {
+    return [sampleQuiz];
+  }
+
+  return stored;
 }
 
 export function getQuizById(id: string): Quiz | undefined {
@@ -31,7 +50,7 @@ export function getQuizById(id: string): Quiz | undefined {
 }
 
 export function createQuiz(quiz: Omit<Quiz, "id">): Quiz {
-  const quizzes = getQuizzes();
+  const quizzes = getQuizzes().filter((q) => q.id !== "sample-1"); // Remove sample quiz
   const newQuiz: Quiz = { ...quiz, id: Date.now().toString() };
   localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify([...quizzes, newQuiz]));
   return newQuiz;
@@ -48,11 +67,13 @@ export function deleteQuiz(id: string): void {
   localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes.filter((q) => q.id !== id)));
 }
 
-export function evaluate(quiz: Quiz, answers: Record<string, number>): QuizResult {
+export function evaluate(quiz: Quiz, answers: Record<string, string>): QuizResult {
   let correct = 0;
   quiz.questions.forEach((q) => {
-    const a = answers[q.id];
-    if (typeof a === "number" && a === q.answerIndex) correct++;
+    const userAnswer = answers[q.id];
+    if (userAnswer && userAnswer === q.correctAnswer) {
+      correct++;
+    }
   });
   return { correct, total: quiz.questions.length };
 }

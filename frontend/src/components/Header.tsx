@@ -49,6 +49,7 @@ const Header = () => {
             <>
               <NavLink
                 to={ROUTES.TEACHER}
+                end
                 className={({ isActive }) =>
                   isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
                 }

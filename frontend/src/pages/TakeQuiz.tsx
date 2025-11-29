@@ -9,7 +9,7 @@ import styles from "./TakeQuiz.module.less";
 const TakeQuiz = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,8 +20,8 @@ const TakeQuiz = () => {
     }
   }, []);
 
-  const setAnswer = (qid: string, idx: number) => {
-    setAnswers((prev) => ({ ...prev, [qid]: idx }));
+  const setAnswer = (qid: string, answer: string) => {
+    setAnswers((prev) => ({ ...prev, [qid]: answer }));
   };
 
   const onSubmit = () => {
@@ -88,12 +88,14 @@ const TakeQuiz = () => {
         {selectedQuiz.questions.map((q, i) => (
           <div key={q.id} className={styles.questionItem}>
             <div className={styles.questionText}>
-              {i + 1}. {q.text}
+              {i + 1}. {q.content}
             </div>
             <Radio.Group onChange={(e) => setAnswer(q.id, e.target.value)} value={answers[q.id]}>
-              {q.options.map((o, idx) => (
-                <div key={idx}>
-                  <Radio value={idx}>{o}</Radio>
+              {Object.entries(q.options).map(([key, value]) => (
+                <div key={key}>
+                  <Radio value={key}>
+                    {key}. {value}
+                  </Radio>
                 </div>
               ))}
             </Radio.Group>
