@@ -4,10 +4,10 @@ import { parseJSON } from "../utils";
 
 export const sampleQuiz: Quiz = {
   id: "sample-1",
-  title: "Sample Quiz: Basic Knowledge",
-  description: "A sample quiz to demonstrate the new format",
+  title: "test",
+  description: "",
   timeLimit: 30,
-  passingScore: 70,
+  passingScore: 100,
   questions: [
     {
       id: "q1",
@@ -17,19 +17,31 @@ export const sampleQuiz: Quiz = {
       hint: "Think about basic addition",
       feedback: "2 + 2 equals 4",
     },
+  ],
+};
+
+export const sampleQuiz2: Quiz = {
+  id: "sample-2",
+  title: "Math",
+  description: "abc",
+  timeLimit: 30,
+  passingScore: 50,
+  questions: [
     {
-      id: "q2",
-      content: "React is a...",
-      options: { A: "Database", B: "Library", C: "OS", D: "Language" },
-      correctAnswer: "B",
-      hint: "It's used for building user interfaces",
-      feedback: "React is a JavaScript library for building UIs",
+      id: "q1",
+      content: "What is 5 + 3?",
+      options: { A: "6", B: "7", C: "8", D: "9" },
+      correctAnswer: "C",
+      hint: "Count on your fingers",
+      feedback: "5 + 3 equals 8",
     },
     {
-      id: "q3",
-      content: "HTML stands for?",
-      options: { A: "HyperText Markup Language", B: "HyperTool", C: "Hyperlink", D: "None" },
-      correctAnswer: "A",
+      id: "q2",
+      content: "What is 10 - 4?",
+      options: { A: "5", B: "6", C: "7", D: "8" },
+      correctAnswer: "B",
+      hint: "Subtract step by step",
+      feedback: "10 - 4 equals 6",
     },
   ],
 };
@@ -37,9 +49,9 @@ export const sampleQuiz: Quiz = {
 export function getQuizzes(): Quiz[] {
   const stored = parseJSON<Quiz[]>(localStorage.getItem(STORAGE_KEYS.QUIZZES), []);
 
-  // If no quizzes, return sample quiz
+  // If no quizzes, return sample quizzes
   if (stored.length === 0) {
-    return [sampleQuiz];
+    return [sampleQuiz, sampleQuiz2];
   }
 
   return stored;
@@ -76,4 +88,29 @@ export function evaluate(quiz: Quiz, answers: Record<string, string>): QuizResul
     }
   });
   return { correct, total: quiz.questions.length };
+}
+
+// Quiz completion tracking
+export interface QuizCompletion {
+  quizId: string;
+  score: number;
+  total: number;
+  percentage: number;
+  passed: boolean;
+  completedAt: string;
+}
+
+export function saveQuizCompletion(completion: QuizCompletion): void {
+  const completions = getQuizCompletions();
+  // Update or add new completion
+  const filtered = completions.filter((c) => c.quizId !== completion.quizId);
+  localStorage.setItem(STORAGE_KEYS.QUIZ_COMPLETIONS, JSON.stringify([...filtered, completion]));
+}
+
+export function getQuizCompletions(): QuizCompletion[] {
+  return parseJSON<QuizCompletion[]>(localStorage.getItem(STORAGE_KEYS.QUIZ_COMPLETIONS), []);
+}
+
+export function getQuizCompletion(quizId: string): QuizCompletion | undefined {
+  return getQuizCompletions().find((c) => c.quizId === quizId);
 }

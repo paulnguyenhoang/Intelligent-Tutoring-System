@@ -1,0 +1,150 @@
+.resultContainer {
+  padding: 32px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultCard {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  width: 100%;
+
+  :global {
+    .ant-card-body {
+      padding: 48px 32px;
+    }
+
+    .ant-result-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+.resultTitle {
+  margin: 16px 0 !important;
+  font-size: 28px;
+  color: #1f1f1f;
+}
+
+.scoreInfo {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.scoreDisplay {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+}
+
+.scoreNumber {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1890ff;
+  line-height: 1;
+}
+
+.scorePercentage {
+  font-size: 32px;
+  font-weight: 600;
+  color: #52c41a;
+}
+
+.primaryButton {
+  height: 48px;
+  padding: 0 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border: none;
+
+  &:hover {
+    background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+}
+
+.retryButton {
+  height: 48px;
+  padding: 0 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid #1890ff;
+  color: #1890ff;
+
+  &:hover {
+    background: #e6f7ff;
+    border-color: #40a9ff;
+    color: #40a9ff;
+  }
+}
+
+.feedbackAlert {
+  margin-top: 32px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: none;
+
+  :global {
+    .ant-alert-message {
+      margin-bottom: 12px;
+    }
+
+    .ant-alert-description {
+      line-height: 1.6;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .resultContainer {
+    padding: 16px;
+  }
+
+  .resultCard {
+    :global {
+      .ant-card-body {
+        padding: 32px 20px;
+      }
+
+      .ant-result-icon {
+        font-size: 60px;
+      }
+    }
+  }
+
+  .resultTitle {
+    font-size: 22px;
+  }
+
+  .scoreNumber {
+    font-size: 36px;
+  }
+
+  .scorePercentage {
+    font-size: 24px;
+  }
+
+  .primaryButton,
+  .retryButton {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  :global {
+    .ant-result-extra {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+}

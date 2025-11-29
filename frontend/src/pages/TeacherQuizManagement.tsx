@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Card, List, Popconfirm, message, Modal, Space, Tag, Typography } from "antd";
+import { Button, Card, List, message, Modal, Space, Tag, Typography } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -52,6 +52,27 @@ export default function TeacherQuizManagement() {
     loadQuizzes();
   };
 
+  const confirmDelete = (quiz: Quiz) => {
+    Modal.confirm({
+      title: "Delete this quiz?",
+      content: `Are you sure you want to delete "${quiz.title}"?`,
+      okText: "Yes",
+      cancelText: "No",
+      okType: "danger",
+      centered: true,
+      className: styles.deleteConfirmModal,
+      onOk() {
+        handleDelete(quiz.id);
+      },
+      okButtonProps: {
+        style: { minWidth: 80 },
+      },
+      cancelButtonProps: {
+        style: { minWidth: 80 },
+      },
+    });
+  };
+
   const openEditModal = (quiz: Quiz) => {
     setSelectedQuiz(quiz);
     setOpenEdit(true);
@@ -88,17 +109,14 @@ export default function TeacherQuizManagement() {
                   <Button key="edit" icon={<EditOutlined />} onClick={() => openEditModal(quiz)}>
                     Edit
                   </Button>,
-                  <Popconfirm
+                  <Button
                     key="delete"
-                    title="Delete this quiz?"
-                    onConfirm={() => handleDelete(quiz.id)}
-                    okText="Yes"
-                    cancelText="No"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => confirmDelete(quiz)}
                   >
-                    <Button danger icon={<DeleteOutlined />}>
-                      Delete
-                    </Button>
-                  </Popconfirm>,
+                    Delete
+                  </Button>,
                 ]}
               >
                 <List.Item.Meta
