@@ -6,6 +6,7 @@ import TeacherQuizManagement from "./pages/TeacherQuizManagement";
 import StudentCourses from "./pages/StudentCourses";
 import TakeQuiz from "./pages/TakeQuiz";
 import QuizResult from "./pages/QuizResult";
+import CourseDetail from "./pages/CourseDetail";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ROUTES } from "./constants";
@@ -39,6 +40,14 @@ export default function Router() {
             element={
               <ProtectedRoute allowedRole="student">
                 <StudentCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id"
+            element={
+              <ProtectedRoute allowedRole="student">
+                <CourseDetail />
               </ProtectedRoute>
             }
           />
