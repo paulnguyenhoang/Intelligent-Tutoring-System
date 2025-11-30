@@ -97,14 +97,16 @@ export default function QuizListView({ quizzes, onStartQuiz }: QuizListViewProps
                         <Tag color="green">Pass: {quiz.passingScore || 70}%</Tag>
                       </div>
 
-                      {isCompleted && (
-                        <div className={styles.completionInfo}>
+                      <div className={styles.completionInfo}>
+                        {isCompleted ? (
                           <Text type="secondary" style={{ fontSize: 12 }}>
                             Last attempt: {completion.score}/{completion.total} •{" "}
                             {new Date(completion.completedAt).toLocaleDateString()}
                           </Text>
-                        </div>
-                      )}
+                        ) : (
+                          <div style={{ height: "20px" }}></div>
+                        )}
+                      </div>
 
                       <Button
                         type="primary"
