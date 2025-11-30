@@ -9,6 +9,12 @@
   margin-top: 64px; /* Height of header */
   padding: 2rem;
   flex: 1;
+  overflow: hidden;
+}
+
+/* Remove padding for quiz taking page */
+.main-content:has([class*="takingQuizContainer"]) {
+  padding: 0;
 }
 
 .logo {

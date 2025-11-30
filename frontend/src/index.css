@@ -41,6 +41,11 @@ body {
   width: 100%;
   background-color: #ffffff;
   color: #213547;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 h1 {

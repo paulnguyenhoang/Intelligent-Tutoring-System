@@ -1,4 +1,4 @@
-import { Course } from "../types";
+import type { Course } from "../types";
 import { STORAGE_KEYS } from "../constants";
 import { parseJSON } from "../utils";
 

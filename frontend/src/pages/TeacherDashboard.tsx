@@ -5,7 +5,8 @@ import CreateCourseForm from "../components/CreateCourseForm";
 import EditCourseModal from "../components/EditCourseModal";
 import CoursesList from "../components/CoursesList";
 import { getCourses, createCourse, deleteCourse, updateCourse } from "../services/courseService";
-import { Course } from "../types";
+import type { Course } from "../types";
+import styles from "./TeacherDashboard.module.less";
 
 const { Header, Content } = Layout;
 

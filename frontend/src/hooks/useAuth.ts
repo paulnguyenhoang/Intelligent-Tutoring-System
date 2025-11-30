@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User } from "../types";
+import type { User } from "../types";
 import { STORAGE_KEYS, ROUTES } from "../constants";
 import { parseJSON } from "../utils";
 

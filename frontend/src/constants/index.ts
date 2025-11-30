@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   USERS: "its_users",
   COURSES: "its_courses",
   QUIZZES: "its_quizzes",
+  QUIZ_COMPLETIONS: "its_quiz_completions",
 } as const;
 
 // Routes
