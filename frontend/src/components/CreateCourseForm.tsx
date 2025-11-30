@@ -4,7 +4,7 @@ import { InboxOutlined, CloudUploadOutlined } from "@ant-design/icons";
 import type { Course } from "../types";
 import type { RcFile } from "antd/es/upload/interface";
 
-const { Dragger } = Upload; // Sử dụng Dragger để chiếm trọn chiều ngang
+const { Dragger } = Upload;
 
 type Props = {
   open: boolean;
@@ -14,39 +14,42 @@ type Props = {
 
 const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
   const [form] = Form.useForm();
-  // State để lưu ảnh preview và kiểm soát hiển thị text
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const convertFileToBase64 = (file: RcFile): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  const handleUpload = async (file: RcFile) => {
-    const base64 = await convertFileToBase64(file);
-    // Lưu vào form để submit
-    form.setFieldValue("thumbnail", base64);
-    // Lưu vào state để hiển thị preview
-    setPreviewImage(base64);
-    message.success("Thumbnail uploaded successfully!");
-    return false; // Prevent default upload behavior (không gửi request lên server ngay)
+  const handleUpload = (file: RcFile) => {
+    try {
+      // 1. Tạo URL ảo (Blob URL)
+      const objectUrl = URL.createObjectURL(file);
+      
+      // 2. Gán URL này vào form field 'thumbnail' (đang bị ẩn)
+      form.setFieldValue("thumbnail", objectUrl);
+      
+      // 3. Hiển thị ảnh preview
+      setPreviewImage(objectUrl);
+      
+      message.success("Thumbnail selected successfully!");
+    } catch (err) {
+      message.error("Failed to select image");
+    }
+    return false; // Chặn upload mặc định
   };
 
   const onOk = async () => {
     try {
       const vals = await form.validateFields();
+      
+      // Nếu chưa có ảnh thì dùng ảnh mặc định
+      if (!vals.thumbnail) {
+        vals.thumbnail = "https://placehold.co/600x400?text=No+Image";
+      }
+
       onCreate(vals);
-      handleCancel(); // Gọi hàm reset chung
+      handleCancel();
     } catch (error) {
       console.log("Validate Failed:", error);
     }
   };
 
-  // Reset form và state ảnh khi đóng
   const handleCancel = () => {
     form.resetFields();
     setPreviewImage(null);
@@ -60,7 +63,7 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
       onOk={onOk}
       onCancel={handleCancel}
       destroyOnClose
-      width={600} // Tăng chiều rộng modal một chút cho đẹp
+      width={600}
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -88,29 +91,35 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
           />
         </Form.Item>
 
-        <Form.Item
-          name="thumbnail"
-          label="Thumbnail"
-          rules={[{ required: true, message: "Please upload a thumbnail image" }]}
+        {/* --- KHU VỰC UPLOAD ẢNH (SỬA ĐỔI) --- */}
+        
+        {/* 1. Field ẩn chứa giá trị thực (URL string) để Form submit đúng */}
+        <Form.Item 
+          name="thumbnail" 
+          hidden // Ẩn khỏi giao diện
+          rules={[{ required: true, message: "Please upload a thumbnail" }]}
         >
-          {/* Dùng Dragger thay vì Upload thường */}
+          <Input /> 
+        </Form.Item>
+
+        {/* 2. Giao diện Upload (Không có name="thumbnail" để tránh conflict dữ liệu) */}
+        <Form.Item label="Thumbnail" required>
           <Dragger
             accept="image/*"
             beforeUpload={handleUpload}
             maxCount={1}
-            showUploadList={false} // Tắt list mặc định để tự custom giao diện bên trong
+            showUploadList={false}
             style={{ padding: 20, background: '#fafafa' }}
           >
             {previewImage ? (
-              // Giao diện KHI ĐÃ CÓ ẢNH
               <div className="flex flex-col items-center justify-center">
                 <img
                   src={previewImage}
                   alt="thumbnail preview"
                   style={{
-                    maxHeight: 200,
-                    maxWidth: "100%",
-                    objectFit: "contain",
+                    height: 180,
+                    width: "100%",
+                    objectFit: "cover",
                     borderRadius: 8,
                     marginBottom: 10,
                   }}
@@ -121,7 +130,6 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
                 </div>
               </div>
             ) : (
-              // Giao diện KHI CHƯA CÓ ẢNH
               <>
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
@@ -130,13 +138,13 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
                   Click or drag file to this area to upload
                 </p>
                 <p className="ant-upload-hint">
-                  Support for a single upload. Strictly prohibited from uploading
-                  company data or other banned files.
+                  Supports: PNG, JPG, JPEG, WEBP
                 </p>
               </>
             )}
           </Dragger>
         </Form.Item>
+        {/* --- HẾT KHU VỰC UPLOAD --- */}
 
         <Form.Item name="description" label="Description">
           <Input.TextArea rows={4} placeholder="Enter course description" />

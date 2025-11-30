@@ -160,7 +160,7 @@ const handleVideoUpload = async (file: RcFile) => {
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/instructor/dashboard")}
+          onClick={() => navigate("/teacher")}
           className="mb-4"
         >
           Back to Dashboard
@@ -176,7 +176,7 @@ const handleVideoUpload = async (file: RcFile) => {
     <div className="p-6">
       <Button
         icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/instructor/dashboard")}
+        onClick={() => navigate("/teacher")}
         className="mb-6"
       >
         Back to Dashboard
