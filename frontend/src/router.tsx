@@ -9,6 +9,7 @@ import QuizResult from "./pages/QuizResult";
 import CourseDetail from "./pages/CourseDetail";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
+import InstructorCourseDetail from "./pages/InstructorCourseDetail"; // Import trang mới
 import { ROUTES } from "./constants";
 
 export default function Router() {
@@ -51,6 +52,14 @@ export default function Router() {
               </ProtectedRoute>
             }
           />
+          <Route 
+        path="/teacher/courses/:id" 
+        element={
+          <ProtectedRoute allowedRole="teacher">
+            <InstructorCourseDetail />
+          </ProtectedRoute>
+        } 
+      />
           <Route
             path="quiz"
             element={
