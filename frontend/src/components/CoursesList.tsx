@@ -16,7 +16,7 @@ const CoursesList = ({ courses, onEdit, onDelete, onCreate }: Props) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetail = (courseId: string) => {
-    navigate(`/instructor/courses/${courseId}`);
+    navigate(`/teacher/courses/${courseId}`);
   };
 
   return (

@@ -22,7 +22,7 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
   CloudUploadOutlined,
-  InboxOutlined, // 1. Import thêm icon Inbox
+  InboxOutlined,
 } from "@ant-design/icons";
 import type { RcFile } from "antd/es/upload/interface";
 
@@ -30,7 +30,7 @@ import { getCourses } from "../services/courseService";
 import { Course } from "../types";
 
 const { Title, Text, Paragraph } = Typography;
-const { Dragger } = Upload; // 2. Sử dụng Dragger
+const { Dragger } = Upload;
 
 interface Lesson {
   id: string;
@@ -45,7 +45,7 @@ const mockLessons: Lesson[] = [
     id: "l1",
     title: "Introduction to React",
     type: "VIDEO",
-    content: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    content: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Link YouTube mẫu
     duration: "15:30",
   },
 ];
@@ -58,9 +58,12 @@ export default function InstructorCourseDetail() {
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
   const [openModal, setOpenModal] = useState(false);
   
-  // 3. State để lưu tên file video sau khi upload (để hiển thị UI)
+  // --- 1. State mới cho Video Player Modal ---
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
+  // -------------------------------------------
+
   const [videoFileName, setVideoFileName] = useState<string | null>(null);
-  
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -68,6 +71,16 @@ export default function InstructorCourseDetail() {
     const foundCourse = allCourses.find((c) => c.id === id);
     setCourse(foundCourse);
   }, [id]);
+
+  // Hàm xử lý khi bấm vào bài học Video
+  const handlePlayVideo = (lesson: Lesson) => {
+    if (lesson.type === "VIDEO") {
+      setCurrentVideoUrl(lesson.content);
+      setVideoModalOpen(true);
+    } else {
+      message.info("This is a text lesson.");
+    }
+  };
 
   const handleAddLesson = async () => {
     try {
@@ -77,7 +90,7 @@ export default function InstructorCourseDetail() {
         ...vals,
       };
       setLessons([...lessons, newLesson]);
-      handleCloseModal(); // Reset form khi đóng
+      handleCloseModal();
     } catch (error) {
       console.log("Validate Failed:", error);
     }
@@ -85,30 +98,47 @@ export default function InstructorCourseDetail() {
 
   const handleCloseModal = () => {
     form.resetFields();
-    setVideoFileName(null); // Reset tên file video
+    setVideoFileName(null);
     setOpenModal(false);
   };
 
-  const convertFileToBase64 = (file: RcFile): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  const formatDuration = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+};
 
-  const handleVideoUpload = async (file: RcFile) => {
-    try {
-      const base64 = await convertFileToBase64(file);
-      form.setFieldValue("content", base64);
-      setVideoFileName(file.name); // Lưu tên file để hiển thị
-      message.success("Video uploaded successfully!");
-    } catch (error) {
-      message.error("Failed to upload video");
-    }
-    return false; 
-  };
+const handleVideoUpload = async (file: RcFile) => {
+  try {
+    const previewUrl = URL.createObjectURL(file);
+    
+    // --- BẮT ĐẦU LOGIC DETECT DURATION ---
+    // Tạo một element video ảo trong bộ nhớ (không hiển thị ra UI)
+    const videoElement = document.createElement("video");
+    videoElement.src = previewUrl;
+    
+    // Lắng nghe sự kiện khi video load xong thông tin
+    videoElement.onloadedmetadata = () => {
+      // Lấy thời lượng (tính bằng giây)
+      const durationSec = videoElement.duration;
+      if (durationSec && !isNaN(durationSec)) {
+        // Format thành chuỗi "MM:SS" (ví dụ: "05:30")
+        const formattedTime = formatDuration(durationSec);
+        // Tự động điền vào ô Duration trong form
+        form.setFieldValue("duration", formattedTime);
+        message.success(`Video duration detected: ${formattedTime}`);
+      }
+    };
+    // --- KẾT THÚC LOGIC DETECT ---
+
+    form.setFieldValue("content", previewUrl);
+    setVideoFileName(file.name);
+    message.success("Video selected successfully!");
+  } catch (error) {
+    message.error("Failed to select video");
+  }
+  return false; 
+};
 
   const handleDeleteLesson = (lessonId: string) => {
     setLessons(lessons.filter((l) => l.id !== lessonId));
@@ -130,7 +160,7 @@ export default function InstructorCourseDetail() {
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/teacher")} // Sửa link cho đúng route của bạn
+          onClick={() => navigate("/instructor/dashboard")}
           className="mb-4"
         >
           Back to Dashboard
@@ -146,43 +176,29 @@ export default function InstructorCourseDetail() {
     <div className="p-6">
       <Button
         icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/teacher")}
+        onClick={() => navigate("/instructor/dashboard")}
         className="mb-6"
       >
         Back to Dashboard
       </Button>
 
-      {/* Course Header */}
       <Card className="rounded-lg shadow mb-6">
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1">
-            <Title level={3} className="m-0 mb-2">
-              {course.title}
-            </Title>
+            <Title level={3} className="m-0 mb-2">{course.title}</Title>
             <div className="flex items-center gap-3 mb-4">
               {course.category && <Tag color="blue">{course.category}</Tag>}
             </div>
-            <Paragraph className="text-gray-700 mb-0">
-              {course.description}
-            </Paragraph>
+            <Paragraph className="text-gray-700 mb-0">{course.description}</Paragraph>
           </div>
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => setOpenModal(true)}
-          >
+          <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setOpenModal(true)}>
             Add New Lesson
           </Button>
         </div>
       </Card>
 
-      {/* Lesson List */}
       <Card className="rounded-lg shadow">
-        <Title level={4} className="mb-4">
-          Curriculum ({lessons.length} lessons)
-        </Title>
-
+        <Title level={4} className="mb-4">Curriculum ({lessons.length} lessons)</Title>
         {lessons.length === 0 ? (
           <Empty description="No lessons yet. Click 'Add New Lesson' to get started!" />
         ) : (
@@ -192,35 +208,28 @@ export default function InstructorCourseDetail() {
             renderItem={(lesson, index) => (
               <List.Item
                 actions={[
-                  <Button
-                    type="text"
-                    icon={<EditOutlined />}
-                    size="small"
-                    onClick={() => console.log("Edit lesson:", lesson.id)}
-                  >
-                    Edit
-                  </Button>,
-                  <Button
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />}
-                    size="small"
-                    onClick={() => handleDeleteLesson(lesson.id)}
-                  >
-                    Delete
-                  </Button>,
+                  <Button type="text" icon={<EditOutlined />} size="small">Edit</Button>,
+                  <Button type="text" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDeleteLesson(lesson.id)}>Delete</Button>,
                 ]}
                 className="py-4"
               >
                 <List.Item.Meta
                   avatar={
-                    <div className="flex items-center justify-center w-10 h-10">
+                    // --- 2. Bấm vào icon cũng Play video ---
+                    <div 
+                      className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-gray-100 rounded-full transition"
+                      onClick={() => handlePlayVideo(lesson)}
+                    >
                       {renderLessonIcon(lesson.type)}
                     </div>
                   }
                   title={
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-gray-800">
+                      {/* --- 3. Bấm vào tiêu đề cũng Play video --- */}
+                      <span 
+                        className="font-semibold text-gray-800 cursor-pointer hover:text-blue-600 transition"
+                        onClick={() => handlePlayVideo(lesson)}
+                      >
                         {index + 1}. {lesson.title}
                       </span>
                       <Tag color={lesson.type === "VIDEO" ? "cyan" : "green"}>
@@ -232,16 +241,14 @@ export default function InstructorCourseDetail() {
                     <div className="text-sm text-gray-600 mt-2">
                       {lesson.type === "VIDEO" ? (
                         <>
-                          <div className="mb-1">
+                          <div className="mb-1 cursor-pointer hover:underline" onClick={() => handlePlayVideo(lesson)}>
                             <Text code>{truncateUrl(lesson.content)}</Text>
                           </div>
                           <div>Duration: {lesson.duration}</div>
                         </>
                       ) : (
                         <>
-                          <div className="mb-1 line-clamp-2">
-                            {lesson.content}
-                          </div>
+                          <div className="mb-1 line-clamp-2">{lesson.content}</div>
                           <div>Read time: {lesson.duration}</div>
                         </>
                       )}
@@ -254,119 +261,92 @@ export default function InstructorCourseDetail() {
         )}
       </Card>
 
-      {/* Add Lesson Modal */}
+      {/* --- 4. VIDEO PLAYER MODAL --- */}
+      <Modal
+        title="Lesson Preview"
+        open={videoModalOpen}
+        onCancel={() => {
+            setVideoModalOpen(false);
+            setCurrentVideoUrl(null); // Reset URL để dừng video khi đóng modal
+        }}
+        footer={null} // Không cần nút OK/Cancel
+        width={800}
+        destroyOnClose // Quan trọng: Đóng modal là tắt hẳn video
+        centered
+      >
+        {currentVideoUrl && (
+            <div style={{ width: '100%', height: '450px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Logic: Nếu là link YouTube thì dùng Iframe, nếu là file upload (blob:) thì dùng thẻ Video */}
+                {currentVideoUrl.includes("youtube.com") || currentVideoUrl.includes("youtu.be") ? (
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        src={currentVideoUrl}
+                        title="Video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                ) : (
+                    <video 
+                        src={currentVideoUrl} 
+                        controls 
+                        autoPlay 
+                        style={{ maxWidth: '100%', maxHeight: '100%' }} 
+                    />
+                )}
+            </div>
+        )}
+      </Modal>
+
+      {/* Add Lesson Modal (Giữ nguyên) */}
       <Modal
         title="Add New Lesson"
         open={openModal}
         onOk={handleAddLesson}
-        onCancel={handleCloseModal} // Sử dụng hàm handleCloseModal để reset state
+        onCancel={handleCloseModal}
         destroyOnClose
-        width={600} // Tăng độ rộng modal
+        width={600}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="title"
-            label="Lesson Title"
-            rules={[{ required: true, message: "Please enter a lesson title" }]}
-          >
+          <Form.Item name="title" label="Lesson Title" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-
-          <Form.Item
-            name="type"
-            label="Lesson Type"
-            rules={[{ required: true, message: "Please select a lesson type" }]}
-          >
-            <Select
-              options={[
-                { label: "Video", value: "VIDEO" },
-                { label: "Text/Article", value: "TEXT" },
-              ]}
-            />
+          <Form.Item name="type" label="Lesson Type" rules={[{ required: true }]}>
+            <Select options={[{ label: "Video", value: "VIDEO" }, { label: "Text/Article", value: "TEXT" }]} />
           </Form.Item>
-
-          {/* Conditional: Video URL Input */}
           <Form.Item noWrapperCol={{ span: 24 }} shouldUpdate>
             {({ getFieldValue }) =>
               getFieldValue("type") === "VIDEO" ? (
                 <>
-                  <Form.Item
-                    name="content"
-                    label="Video URL (Optional)"
-                    rules={[
-                      { type: "url", message: "Please enter a valid URL" },
-                    ]}
-                  >
+                  <Form.Item name="content" label="Video URL (Optional)">
                     <Input placeholder="https://www.youtube.com/watch?v=..." />
                   </Form.Item>
-
                   <Form.Item label="Or Upload Video File">
-                    {/* 4. Dragger Component cho Video */}
-                    <Dragger
-                      accept="video/*"
-                      beforeUpload={handleVideoUpload}
-                      maxCount={1}
-                      showUploadList={false}
-                      style={{ padding: 20, background: '#fafafa' }}
-                    >
+                    <Dragger accept="video/*" beforeUpload={handleVideoUpload} maxCount={1} showUploadList={false} style={{ padding: 20, background: '#fafafa' }}>
                       {videoFileName ? (
-                        // Giao diện khi đã có file
                         <div className="flex flex-col items-center justify-center">
                           <PlayCircleOutlined style={{ fontSize: 32, color: '#1890ff', marginBottom: 10 }} />
                           <div style={{ fontWeight: 500, marginBottom: 4 }}>{videoFileName}</div>
-                          <div style={{ color: "#1677ff", fontSize: 13 }}>
-                            <CloudUploadOutlined style={{ marginRight: 6 }} />
-                            Change Video
-                          </div>
+                          <div style={{ color: "#1677ff", fontSize: 13 }}><CloudUploadOutlined style={{ marginRight: 6 }} />Change Video</div>
                         </div>
                       ) : (
-                        // Giao diện khi chưa có file
                         <>
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined />
-                          </p>
-                          <p className="ant-upload-text">
-                            Click or drag video file to this area to upload
-                          </p>
-                          <p className="ant-upload-hint">
-                            Supported formats: MP4, MOV, AVI...
-                          </p>
+                          <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+                          <p className="ant-upload-text">Click or drag video file to this area to upload</p>
                         </>
                       )}
                     </Dragger>
                   </Form.Item>
                 </>
-              ) : null
-            }
-          </Form.Item>
-
-          {/* Conditional: Text Content */}
-          <Form.Item noWrapperCol={{ span: 24 }} shouldUpdate>
-            {({ getFieldValue }) =>
-              getFieldValue("type") === "TEXT" ? (
-                <Form.Item
-                  name="content"
-                  label="Lesson Content"
-                  rules={[
-                    { required: true, message: "Please enter lesson content" },
-                  ]}
-                >
-                  <Input.TextArea
-                    rows={6}
-                    placeholder="Write your lesson content here..."
-                  />
+              ) : getFieldValue("type") === "TEXT" ? (
+                <Form.Item name="content" label="Lesson Content" rules={[{ required: true }]}>
+                  <Input.TextArea rows={6} placeholder="Write your lesson content here..." />
                 </Form.Item>
               ) : null
             }
           </Form.Item>
-
-          <Form.Item
-            name="duration"
-            label="Duration (Optional)"
-            placeholder="e.g., 15:30 or 10 mins read"
-          >
-            <Input />
-          </Form.Item>
+          <Form.Item name="duration" label="Duration (Optional)"><Input /></Form.Item>
         </Form>
       </Modal>
     </div>
