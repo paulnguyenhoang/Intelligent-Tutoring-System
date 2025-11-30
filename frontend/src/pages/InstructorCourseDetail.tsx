@@ -178,7 +178,7 @@ export default function InstructorCourseDetail() {
   if (!course) {
     return (
       <div className="p-6">
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/instructor/dashboard")} className="mb-4">
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/teacher")} className="mb-4">
           Back to Dashboard
         </Button>
         <Card><Empty description={`Course not found`} /></Card>
@@ -188,7 +188,7 @@ export default function InstructorCourseDetail() {
 
   return (
     <div className="p-6">
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/instructor/dashboard")} className="mb-6">
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/teacher")} className="mb-6">
         Back to Dashboard
       </Button>
 
