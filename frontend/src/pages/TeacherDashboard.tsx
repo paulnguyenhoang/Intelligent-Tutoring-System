@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Button, Layout, Space, Typography } from "antd";
+import { Layout, Typography, theme } from "antd"; // Import theme để lấy màu chuẩn
+import { useNavigate } from "react-router-dom";
 import CreateCourseForm from "../components/CreateCourseForm";
 import EditCourseModal from "../components/EditCourseModal";
-import CourseDetailModal from "../components/CourseDetailModal";
 import CoursesList from "../components/CoursesList";
 import { getCourses, createCourse, deleteCourse, updateCourse } from "../services/courseService";
 import type { Course } from "../types";
@@ -11,9 +11,14 @@ import styles from "./TeacherDashboard.module.less";
 const { Header, Content } = Layout;
 
 const TeacherDashboard = () => {
+  const navigate = useNavigate();
+  // Lấy token màu sắc từ Antd để background đồng bộ
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openView, setOpenView] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
@@ -31,11 +36,6 @@ const TeacherDashboard = () => {
     setCourses(getCourses());
   };
 
-  const handleView = (c: Course) => {
-    setSelectedCourse(c);
-    setOpenView(true);
-  };
-
   const handleEdit = (c: Course) => {
     setSelectedCourse(c);
     setOpenEdit(true);
@@ -47,18 +47,15 @@ const TeacherDashboard = () => {
   };
 
   return (
-    <Layout>
-      <Header className={styles.dashboardHeader}>
-        <Typography.Title level={4} className={styles.dashboardTitle}>
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* 1. Header đổi sang màu trắng, xóa nút Create */}
+      <Header style={{ padding: '0 24px', background: colorBgContainer, borderBottom: '1px solid #f0f0f0' }}>
+        <Typography.Title level={4} style={{ margin: '14px 0' }}>
           Teacher Dashboard
         </Typography.Title>
-        <Space>
-          <Button type="primary" onClick={() => setOpenCreate(true)}>
-            Create Course
-          </Button>
-        </Space>
       </Header>
-      <Content className={styles.dashboardContent}>
+
+      <Content style={{ margin: '24px 24px 0' }}>
         <CreateCourseForm
           open={openCreate}
           onClose={() => setOpenCreate(false)}
@@ -70,14 +67,11 @@ const TeacherDashboard = () => {
           onClose={() => setOpenEdit(false)}
           onUpdate={handleUpdate}
         />
-        <CourseDetailModal
-          open={openView}
-          course={selectedCourse}
-          onClose={() => setOpenView(false)}
-        />
+        
+        {/* 2. Truyền hàm mở form xuống CoursesList */}
         <CoursesList
           courses={courses}
-          onView={handleView}
+          onCreate={() => setOpenCreate(true)} // <-- Truyền xuống đây
           onEdit={handleEdit}
           onDelete={handleDelete}
         />

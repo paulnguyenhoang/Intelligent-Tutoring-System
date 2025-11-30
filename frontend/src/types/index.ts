@@ -6,11 +6,21 @@ export type User = {
   password?: string;
 };
 
+export type Instructor = {
+  name: string;
+  avatar?: string;
+};
+
 export type Course = {
   id: string;
   title: string;
   description?: string;
   content?: string;
+  thumbnail: string;
+  category: string;
+  instructor?: Instructor;
+  lessonsWatched?: number;
+  totalLessons?: number;
 };
 
 export type Question = {
