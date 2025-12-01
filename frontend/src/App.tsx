@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { ROUTES } from "./constants";
+import Header from "./components/Header";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const location = useLocation();
+
+  // Re-sync user state on location change
+  useEffect(() => {
+    // Force re-render when location changes
+  }, [location]);
+
+  // Check if current route is Sign In or Sign Up
+  const isAuthPage = location.pathname === ROUTES.SIGN_IN || location.pathname === ROUTES.SIGN_UP;
+
+  // If auth page, render without Header
+  if (isAuthPage) {
+    return <Outlet />;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app-container">
+      <Header />
+      <main className="main-content">
+        <Outlet />
+      </main>
+    </div>
+  );
+};
 
-export default App
+export default App;

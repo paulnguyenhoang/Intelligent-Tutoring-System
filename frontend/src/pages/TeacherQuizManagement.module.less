@@ -1,0 +1,74 @@
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  :global {
+    .ant-card {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .ant-card-head {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .ant-list-item {
+      padding: 16px 24px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+    }
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+
+  :global {
+    .ant-empty-description {
+      font-size: 16px;
+    }
+  }
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
+
+.questionCard {
+  margin-bottom: 16px;
+}
+
+.viewQuestionCard {
+  background: #fafafa;
+  border: 1px solid #e9ecef;
+
+  :global {
+    .ant-card-head {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+  }
+}
+
+.deleteConfirmModal {
+  :global {
+    .ant-modal-confirm-btns {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+
+      .ant-btn {
+        margin: 0 !important;
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+// Main page container
+.pageContainer {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.pageTitle {
+  color: #1890ff !important;
+  margin: 0 !important;
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.searchInput {
+  max-width: 500px;
+  flex: 1;
+  min-width: 280px;
+
+  :global {
+    .ant-input {
+      border-radius: 8px;
+      font-size: 15px;
+      border: 2px solid #d9d9d9;
+
+      &:focus {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+      }
+    }
+  }
+}
+
+.emptyContainer {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+  }
+
+  .searchInput {
+    width: 100%;
+    max-width: 100%;
+  }
+}

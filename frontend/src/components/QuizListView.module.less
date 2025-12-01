@@ -1,0 +1,168 @@
+.overviewSection {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.sectionHeader {
+  border-bottom: 3px solid #1890ff;
+  padding-bottom: 16px;
+  margin-bottom: 28px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+  color: #1890ff;
+  margin: 0 !important;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.quizGrid {
+  min-height: 200px;
+}
+
+.quizCard {
+  height: 100%;
+  border-radius: 12px;
+  border: 2px solid #e8e8e8;
+  transition: all 0.3s ease;
+  background: white;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(24, 144, 255, 0.2);
+    border-color: #1890ff;
+  }
+
+  &.completed {
+    background: linear-gradient(135deg, #fff 0%, #f6ffed 100%);
+  }
+
+  :global {
+    .ant-card-body {
+      padding: 0;
+      height: 100%;
+    }
+
+    .ant-badge-ribbon {
+      font-weight: 600;
+    }
+  }
+}
+
+.cardContent {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.quizTitle {
+  margin: 0 !important;
+  color: #1f1f1f;
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 48px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.quizDescription {
+  margin: 0 !important;
+  font-size: 14px;
+  height: 40px;
+  color: #666;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.descriptionWrapper {
+  min-height: 40px;
+  margin-bottom: 8px;
+}
+
+.descriptionPlaceholder {
+  height: 40px;
+}
+
+.tagsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  :global {
+    .ant-tag {
+      margin: 0;
+      text-align: center;
+      justify-content: center;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+.completionInfo {
+  margin-top: 8px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f0f5ff;
+  border-radius: 6px;
+  border-left: 3px solid #1890ff;
+}
+
+.startButton {
+  margin-top: auto;
+  height: 44px;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+}
+
+// Make all cards same height
+:global {
+  .ant-col {
+    display: flex;
+
+    > .quizCard {
+      width: 100%;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .overviewSection {
+    padding: 16px;
+  }
+
+  .sectionTitle {
+    font-size: 16px;
+  }
+
+  .quizCard {
+    :global {
+      .ant-card-body {
+        padding: 16px;
+      }
+    }
+  }
+}

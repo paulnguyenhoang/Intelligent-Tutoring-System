@@ -1,0 +1,279 @@
+.signinContainer {
+  min-height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 70px;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.logoIcon {
+  font-size: 2rem;
+  color: #1890ff;
+}
+
+.logoText {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btnSignIn {
+  background: #1890ff;
+  border-color: #1890ff;
+
+  &:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+  }
+}
+
+.btnSignUp {
+  border-color: #1890ff;
+  color: #1890ff;
+
+  &:hover {
+    background: #e6f7ff;
+    border-color: #40a9ff;
+    color: #40a9ff;
+  }
+}
+
+/* Main Content */
+.mainContent {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 70px);
+}
+
+/* Left Side */
+.leftSide {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.imageContainer {
+  max-width: 500px;
+  text-align: center;
+  color: white;
+}
+
+.learningIcon {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin-bottom: 2rem;
+  margin-left: 50px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.welcomeText {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* Right Side */
+.rightSide {
+  flex: 1;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 450px;
+}
+
+.formTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.formSubtitle {
+  color: #718096;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.form {
+  :global {
+    .ant-form-item-label > label {
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .ant-input,
+    .ant-input-password,
+    .ant-select-selector {
+      border-radius: 8px;
+    }
+
+    .ant-input:focus,
+    .ant-input-password:focus,
+    .ant-input-focused,
+    .ant-select-focused .ant-select-selector {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    }
+  }
+}
+
+.submitButton {
+  height: 45px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: #1890ff;
+  margin-top: 0.5rem;
+
+  &:hover {
+    background: #40a9ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+}
+
+.signinFooter {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.signUpLink {
+  color: #1890ff;
+  font-weight: 600;
+
+  &:hover {
+    color: #40a9ff;
+    text-decoration: underline;
+  }
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .mainContent {
+    flex-direction: column;
+    height: calc(100vh - 70px);
+  }
+
+  .leftSide {
+    padding: 1.5rem 1rem;
+    min-height: 200px;
+    max-height: 35vh;
+  }
+
+  .welcomeText {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .learningIcon {
+    max-width: 250px;
+    margin-bottom: 1rem;
+  }
+
+  .rightSide {
+    padding: 2rem 1rem;
+    flex: 1;
+  }
+
+  .formTitle {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0.75rem 1rem;
+    height: 60px;
+  }
+
+  .mainContent {
+    height: calc(100vh - 60px);
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .logoIcon {
+    font-size: 1.5rem;
+  }
+
+  .headerButtons {
+    gap: 0.5rem;
+
+    button {
+      padding: 0 12px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .leftSide {
+    display: none;
+  }
+
+  .rightSide {
+    padding: 1.5rem 1rem;
+  }
+
+  .formContainer {
+    max-width: 100%;
+  }
+
+  .formTitle {
+    font-size: 1.5rem;
+  }
+}

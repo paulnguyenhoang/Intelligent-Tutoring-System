@@ -1,8 +1,20 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+}
+
+.main-content {
+  margin-top: 64px; /* Height of header */
   padding: 2rem;
-  text-align: center;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Remove padding for quiz taking page */
+.main-content:has([class*="takingQuizContainer"]) {
+  padding: 0;
 }
 
 .logo {
