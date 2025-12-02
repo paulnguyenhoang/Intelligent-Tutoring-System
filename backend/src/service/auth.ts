@@ -38,7 +38,7 @@ export class AuthService implements IAuthService{
             const result = await this.userRepository.findByUsername(
                 username
             )
-            return bcrypt.compareSync(password,result.passwordHash) && result.role === userRole
+            return result.role === userRole && result.isActive && bcrypt.compareSync(password,result.passwordHash)
         }
         catch(_){
             return false
