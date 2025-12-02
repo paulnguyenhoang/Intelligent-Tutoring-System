@@ -1,19 +1,50 @@
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, Select, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { BookOutlined } from "@ant-design/icons";
 import { useAuth } from "../hooks";
 import { ROUTES } from "../constants";
 import type { UserRole } from "../types";
+import { login as loginAPI } from "../services/authService";
 import styles from "./SignIn.module.less";
 import learningImage from "../assets/learning.jpg";
+import { useState } from "react";
 
 const SignIn = () => {
   const { login, getRedirectPath } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: { username: string; password: string; role: UserRole }) => {
-    login({ username: values.username, role: values.role });
-    window.location.href = getRedirectPath(values.role);
+  const onFinish = async (values: { username: string; password: string; role: UserRole }) => {
+    try {
+      setLoading(true);
+
+      // Map role: 'teacher' -> 'instructor' for backend
+      const backendRole = values.role === "teacher" ? "instructor" : "student";
+
+      // Call backend API to authenticate
+      const isAuthenticated = await loginAPI({
+        username: values.username,
+        password: values.password,
+        role: backendRole,
+      });
+
+      if (isAuthenticated) {
+        // Show success message
+        message.success("Login successful!");
+
+        // Login user in frontend
+        login({ username: values.username, role: values.role });
+
+        // Navigate to appropriate dashboard
+        window.location.href = getRedirectPath(values.role);
+      } else {
+        message.error("Invalid username, password, or role. Please try again.");
+      }
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,6 +119,7 @@ const SignIn = () => {
                   htmlType="submit"
                   size="large"
                   block
+                  loading={loading}
                   className={styles.submitButton}
                 >
                   Sign In

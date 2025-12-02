@@ -26,5 +26,9 @@
     "nodemon": "^3.1.11",
     "pg-promise": "^12.3.0",
     "uuid": "^13.0.0"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "cors": "^2.8.5"
   }
 }

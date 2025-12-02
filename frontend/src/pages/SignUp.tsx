@@ -1,31 +1,56 @@
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, Select, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { BookOutlined } from "@ant-design/icons";
-import { useAuth } from "../hooks";
 import { STORAGE_KEYS, ROUTES } from "../constants";
 import type { UserRole, User } from "../types";
 import { parseJSON } from "../utils";
+import { register } from "../services/authService";
 import styles from "./SignUp.module.less";
 import learningImage from "../assets/learning.jpg";
+import { useState } from "react";
 
 const SignUp = () => {
-  const { login, getRedirectPath } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: {
+  const onFinish = async (values: {
     username: string;
     email: string;
     password: string;
     role: UserRole;
   }) => {
-    // Store user in registry
-    const users = parseJSON<User[]>(localStorage.getItem(STORAGE_KEYS.USERS), []);
-    users.push({ username: values.username, password: values.password, role: values.role });
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    try {
+      setLoading(true);
 
-    // Login user
-    login({ username: values.username, role: values.role });
-    window.location.href = getRedirectPath(values.role);
+      // Call backend API to register
+      await register({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        role: values.role,
+      });
+
+      // Show success message
+      message.success(
+        "Registration successful! Please check your email to verify your account. Redirecting to sign in..."
+      );
+
+      // Store user locally for demo purposes
+      const users = parseJSON<User[]>(localStorage.getItem(STORAGE_KEYS.USERS), []);
+      users.push({ username: values.username, password: values.password, role: values.role });
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+      // Redirect to sign in page after successful registration
+      setTimeout(() => {
+        navigate(ROUTES.SIGN_IN);
+      }, 1500);
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,6 +139,7 @@ const SignUp = () => {
                   htmlType="submit"
                   size="large"
                   block
+                  loading={loading}
                   className={styles.submitButton}
                 >
                   Create Account
