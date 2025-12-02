@@ -1,0 +1,20 @@
+services:
+  its-database:
+    image: postgres:18-alpine
+    restart: no
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready' -h localhost -d ITS"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    environment:
+      PGPORT: 5432
+      PGUSER: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ITS
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: ["postgres", "-c","log_statement=all"]
+    ports:
+      - 5432:5432
