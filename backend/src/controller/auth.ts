@@ -11,13 +11,24 @@ export class AuthController{
     ){
         this.authService = authService
     }
+    public LoginController = async (req: Request<{},{},{
+        username: string,
+        password: string,
+        role: 'student' | 'instructor'
+    }>,res: Response) => {
+        res
+        .status(constants.HTTP_STATUS_OK)
+        .json(await this.authService.authenticate(
+            req.body.username,
+            req.body.password,
+            req.body.role
+        ))
+    }
     public RegisterController = async (req: Request<{},{},UserDTO>,res: Response) => {
         await this.authService.register(req.body)
         res.status(
             constants.HTTP_STATUS_OK
-        ).json({
-            message: 'ok'
-        })
+        ).json('ok')
         return
     }
 

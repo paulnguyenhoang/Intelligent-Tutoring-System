@@ -199,14 +199,14 @@ export class UserRepository implements IUserRepository{
         }
         else {
             await this.db.any(
-                'UPDATE "user" SET id = ${id}, username = ${username}, "passwordHash" = ${passwordHash}, email = ${email}, role = ${role}, "isActive" = ${isActive}, "lastLogin" = ${lastLogin}, "verifyToken" = ${verifyToken}',
+                'UPDATE "user" SET username = ${username}, "passwordHash" = ${passwordHash}, email = ${email}, role = ${role}, "isActive" = ${isActive}, "lastLogin" = ${lastLogin}, "verifyToken" = ${verifyToken} WHERE id = ${id}',
                 {
                     ...userDetail
                 }
             )
             if (user.role === Role.STUDENT){
                 await this.db.any(
-                    'UPDATE "student" SET id = ${id}, "studentID" = ${studentID}, "learningStyle" = ${learningStyle}, "enrollmentDate" = ${enrollmentDate}, "gpa" = ${gpa}',
+                    'UPDATE "student" SET "studentID" = ${studentID}, "learningStyle" = ${learningStyle}, "enrollmentDate" = ${enrollmentDate}, "gpa" = ${gpa} WHERE id = ${id}',
                     {
                         ...specificUserDetail
                     }
@@ -214,7 +214,7 @@ export class UserRepository implements IUserRepository{
             }
             else{
                 await this.db.any(
-                    'UPDATE "instructor" SET id = ${id}, "employeeID" = ${employeeID}, department = ${department}, expertise = ${expertise}',
+                    'UPDATE "instructor" SET "employeeID" = ${employeeID}, department = ${department}, expertise = ${expertise} WHERE id = ${id}',
                     {
                         ...specificUserDetail
                     }

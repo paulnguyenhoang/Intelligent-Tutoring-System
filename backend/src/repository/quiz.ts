@@ -139,7 +139,7 @@ export class QuizRepository implements IQuizRepository{
         }
         else {
             await db.any(
-                'UPDATE quiz SET id = ${id}, title = ${title}, "timeLimit" = ${timeLimit}, "minPassScore" = ${minPassScore}, "maxAttempts" = ${maxAttempts}, status = ${status}',
+                'UPDATE quiz SET title = ${title}, "timeLimit" = ${timeLimit}, "minPassScore" = ${minPassScore}, "maxAttempts" = ${maxAttempts}, status = ${status} WHERE id = ${id}',
                 {
                     ...quizDetail
                 }
@@ -155,12 +155,21 @@ export class QuizRepository implements IQuizRepository{
                     isMultiSelect: (question as MultipleChoiceQuestion).isMultiSelect
                 }
                 await db.any(
-                    'UPDATE question SET id = ${id}, quiz = ${quiz}, title = ${title}, difficulty = ${difficulty}, correctOptionId = ${correctOptionId}, options = ${options}, "isMultiSelect" = ${isMultiSelect}',
+                    'UPDATE question SET quiz = ${quiz}, title = ${title}, difficulty = ${difficulty}, correctOptionId = ${correctOptionId}, options = ${options}, "isMultiSelect" = ${isMultiSelect} WHERE id = ${id}',
                     {
                         ...questionDetail
                     }
                 )
             }
         }
+    }
+    public async delete(
+        id: string
+    ){
+        await db.any(
+            'DELETE FROM quiz WHERE id = ${id}',{
+                id: id
+            }
+        )
     }
 }

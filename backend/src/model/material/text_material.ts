@@ -1,27 +1,25 @@
 import { LearningMaterial } from "../../interface/abstract/learning_material";
 import { FileFormat } from "../enum/file_format";
 import { MaterialType } from "../enum/material_type";
+import uuid from 'uuid'
 
 export class TextMaterial implements LearningMaterial{
     public id: string
-    public url: string
     public type: MaterialType
-    public content: string
-    public wordCount: number
+    public content: Blob
     public format: FileFormat
+    public size: string
     public constructor(
-        id: string,
-        url: string,
         type: MaterialType,
-        content: string,
-        wordCount: number,
-        format: FileFormat
+        content: Blob,
+        format: FileFormat,
+        size: string,
+        id?: string
     ){
-        this.id = id
-        this.url = url
+        this.id = id ? id : uuid.v4()
         this.type = type
         this.content = content
-        this.wordCount = wordCount
+        this.size = size
         this.format = format
     }
     public async render(){

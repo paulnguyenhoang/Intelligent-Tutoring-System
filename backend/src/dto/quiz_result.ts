@@ -5,6 +5,6 @@ export interface QuizResultDTO{
     timeTaken?: number,
     attempts: number,
     score: number,
-    feedback: string,
+    feedback?: string,
     status: QuizResultStatus
 }

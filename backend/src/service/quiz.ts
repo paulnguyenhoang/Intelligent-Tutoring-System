@@ -38,6 +38,43 @@ export class QuizService implements IQuizService{
         )
     
     }
+    public async updateQuiz(
+        quiz: QuizDTO
+    ){
+        await this.quizRepository.delete(
+            quiz.quizID as string
+        )
+        const newQuiz = new Quiz(
+            quiz.quizID!,
+            quiz.instructorID,
+            quiz.title,
+            quiz.timeLimit,
+            quiz.minPassScore,
+            quiz.maxAttempts,
+            QuizStatus.PUBLISHED,
+            []
+        )
+        quiz.questions.forEach(
+            (value) => {
+                newQuiz.addQuestion(
+                    new MultipleChoiceQuestion(
+                        uuid.v4(),
+                        quiz.quizID!,
+                        value.questionTitle,
+                        crypto.randomInt(0,4),
+                        value.options,
+                        true,
+                        value.correctOptionId
+                    )
+                )
+            }
+        )
+        await newQuiz.shuffleQuestions()
+        await this.quizRepository.save(
+            newQuiz
+        )
+        return newQuiz
+    }
     public async calculateScore(
         attempt: QuizAttempt
     ){
@@ -73,29 +110,36 @@ export class QuizService implements IQuizService{
         quiz: QuizDTO
     ){
         const quizID = uuid.v4()
-        const question = quiz.questions.map(
-            (value) => {
-                return new MultipleChoiceQuestion(
-                    uuid.v4(),
-                    quizID,
-                    value.questionTitle,
-                    crypto.randomInt(0,4),
-                    value.options,
-                    true,
-                    value.correctOptionId
-                )
-            }
-        )
-        return new Quiz(
+        const newQuiz = new Quiz(
             quizID,
-            quiz.id,
+            quiz.instructorID,
             quiz.title,
             quiz.timeLimit,
             quiz.minPassScore,
             quiz.maxAttempts,
-            QuizStatus.DRAFT,
-            question
+            QuizStatus.PUBLISHED,
+            []
         )
+        quiz.questions.forEach(
+            (value) => {
+                newQuiz.addQuestion(
+                    new MultipleChoiceQuestion(
+                        uuid.v4(),
+                        quizID,
+                        value.questionTitle,
+                        crypto.randomInt(0,4),
+                        value.options,
+                        true,
+                        value.correctOptionId
+                    )
+                )
+            }
+        )
+        await newQuiz.shuffleQuestions()
+        await this.quizRepository.save(
+            newQuiz
+        )
+        return newQuiz
     }
     public async getQuizResult(
         attemptID: string
@@ -103,18 +147,28 @@ export class QuizService implements IQuizService{
         const attemptResult = await this.quizAttemptRepository.findAttemptByID(
             attemptID
         )
-        const attemptsResult = await this.quizAttemptRepository.getAttempts()
+        const attemptsResult = await this.quizAttemptRepository.getAttempts(attemptResult.studentID,attemptID);
+        const quiz = await this.quizRepository.findQuizByID(attemptResult.quizID)
         let dto: QuizResultDTO = {
             quizID: attemptResult.quizID,
             timeTaken: attemptResult.timeTaken,
-            attempts: attemptResult.
+            attempts: attemptsResult.length,
+            score: attemptResult.totalScore ? attemptResult.totalScore : 0,
+            feedback: attemptResult.feedback,
+            status: (attemptResult.totalScore ? attemptResult.totalScore : 0) >= quiz.minPassScore ? QuizResultStatus.PASSED : QuizResultStatus.FAILED
         }
         return dto
     }
     public async analyzeStatistics(
         quizID: string
     ){
-        let a: QuizStatsDTO = {}
-        return a
+        return await this.quizAttemptRepository.getQuizStats(quizID)
+    }
+    public async deleteQuiz(
+        id: string
+    ){
+        await this.quizRepository.delete(
+            id
+        )
     }
 }

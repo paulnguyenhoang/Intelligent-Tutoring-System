@@ -12,8 +12,10 @@ export interface IQuizService{
     quizAttemptRepository: IQuizAttemptRepository
     questionRepository: IQuestionRepository
     createQuiz: (quiz: QuizDTO) => Promise<Quiz>
+    updateQuiz: (quiz: QuizDTO) => Promise<Quiz>
     submitQuiz: (attempt: QuizAttempt) => Promise<void>
     calculateScore: (attempt: QuizAttempt) => Promise<number>
     getQuizResult: (attemptID: string) => Promise<QuizResultDTO>
     analyzeStatistics: (quizID: string) => Promise<QuizStatsDTO>
+    deleteQuiz: (id: string) => Promise<void>
 }

@@ -1,5 +1,6 @@
 import { CourseStatus } from "../enum/course_status"
-import { Module } from "./module"
+import { Lesson } from "./lesson"
+import crypto from 'crypto'
 
 export class Course{
     public id: string 
@@ -9,35 +10,41 @@ export class Course{
     public status: CourseStatus
     public createdDate: Date
     public tags: string[]
-    public modules: Module[]
+    public lessons: Lesson[]
+    public category: string
+    public thumbnail?: Blob
     public constructor(
-        id: string,
         title: string,
         description: string,
         instructorID: string,
         status: CourseStatus,
         createdDate: Date,
         tags: string[],
-        modules: Module[]
+        lessons: Lesson[],
+        category: string,
+        thumbnail?: Blob,
+        id?: string
     ){
-        this.id = id
+        this.id = id ? id : String(crypto.randomInt(1000000000,10000000000))
         this.title = title
         this.description = description
         this.instructorID = instructorID
         this.status = status
         this.createdDate = createdDate
         this.tags = tags
-        this.modules = modules
+        this.lessons = lessons
+        this.category = category
+        this.thumbnail = thumbnail
     }
-    public async addModule(module: Module){
-        this.modules.push(module)
+    public async addLesson(lesson: Lesson){
+        this.lessons.push(lesson)
     }
-    public async removeModule(moduleID: string){
-        const idx = this.modules.findIndex(
-            (value: Module) => {
-                return value.id === moduleID
+    public async removeModule(lessonID: string){
+        const idx = this.lessons.findIndex(
+            (value: Lesson) => {
+                return value.id === lessonID
             }
         )
-        this.modules.splice(idx,1)
+        this.lessons.splice(idx,1)
     }
 }

@@ -1,8 +1,11 @@
+import { CourseContentMap } from "../../dto/course"
 import { Course } from "../../model/entity/course"
-import { Instructor } from "../../model/user/instructor"
 
 export interface ICourseRepository{
     save: (course: Course) => Promise<void>
-    findById: (id: string) => Promise<Course>
-    findByInstructor: (instructor: Instructor) => Promise<Course[]>
+    findByID: (id: string) => Promise<Course>
+    findByInstructor: (instructor: string) => Promise<Course[]>
+    findAll: () => Promise<Course[]>
+    delete: (id: string) => Promise<void>
+    updateCourse: (map: CourseContentMap) => Promise<void>
 }

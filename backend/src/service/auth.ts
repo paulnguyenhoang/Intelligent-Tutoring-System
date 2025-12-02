@@ -21,13 +21,24 @@ export class AuthService implements IAuthService{
     }
     public async authenticate(
         username: string,
-        password: string
+        password: string,
+        role: string
     ){
+        let userRole
+        switch (role) {
+            case 'student':
+                userRole = Role.STUDENT
+                break;
+        
+            default:
+                userRole = Role.INSTRUCTOR
+                break;
+        }
         try{
             const result = await this.userRepository.findByUsername(
                 username
             )
-            return bcrypt.compareSync(password,result.passwordHash)
+            return bcrypt.compareSync(password,result.passwordHash) && result.role === userRole
         }
         catch(_){
             return false

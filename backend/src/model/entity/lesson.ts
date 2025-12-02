@@ -1,33 +1,20 @@
+import crypto from 'crypto'
 import { LearningMaterial } from "../../interface/abstract/learning_material"
 
 export class Lesson{
     public id: string
+    public course: string
     public title: string
-    public estimatedTime: number
-    public contentBody: string
-    public materials: LearningMaterial[]
+    public materials: LearningMaterial
     public constructor(
-        id: string,
         title: string,
-        estimatedTime: number,
-        contentBody: string,
-        materials: LearningMaterial[]
+        materials: LearningMaterial,
+        course: string,
+        id?: string
     ){
-        this.id = id
+        this.id = id ? id : String(crypto.randomInt(1000000000,10000000000))
         this.title = title
-        this.estimatedTime = estimatedTime
-        this.contentBody = contentBody
+        this.course = course
         this.materials = materials
-    }
-    public async addMaterial(material: LearningMaterial){
-        this.materials.push(material)
-    }
-    public async removeMaterial(materialID: string){
-        const idx = this.materials.findIndex(
-            (value: LearningMaterial) => {
-                return value.id === materialID
-            }
-        )
-        this.materials.splice(idx,1)
     }
 }

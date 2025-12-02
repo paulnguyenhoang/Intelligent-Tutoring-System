@@ -1,5 +1,6 @@
 export enum FileFormat{
     DOCX,
     TXT,
-    PDF
+    PDF,
+    PPTX
 }

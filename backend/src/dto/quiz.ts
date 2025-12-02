@@ -1,7 +1,6 @@
-import { DifficultyLevel } from "../model/enum/difficulty_level"
-
 export interface QuizDTO{
-    id: string,
+    quizID?: string,
+    instructorID: string,
     title: string,
     description: string,
     timeLimit: number,
