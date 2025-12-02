@@ -16,16 +16,26 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const handleUpload = (file: RcFile) => {
+  // Hàm chuyển đổi File sang Base64
+  const convertFileToBase64 = (file: RcFile): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file); // Đọc file dưới dạng Data URL (Base64)
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleUpload = async (file: RcFile) => {
     try {
-      // 1. Tạo URL ảo (Blob URL)
-      const objectUrl = URL.createObjectURL(file);
+      // 1. Chuyển file sang chuỗi Base64
+      const base64String = await convertFileToBase64(file);
       
-      // 2. Gán URL này vào form field 'thumbnail' (đang bị ẩn)
-      form.setFieldValue("thumbnail", objectUrl);
+      // 2. Gán chuỗi Base64 này vào form field 'thumbnail'
+      form.setFieldValue("thumbnail", base64String);
       
-      // 3. Hiển thị ảnh preview
-      setPreviewImage(objectUrl);
+      // 3. Hiển thị ảnh preview bằng chính chuỗi Base64 đó
+      setPreviewImage(base64String);
       
       message.success("Thumbnail selected successfully!");
     } catch (err) {
@@ -43,6 +53,7 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
         vals.thumbnail = "https://placehold.co/600x400?text=No+Image";
       }
 
+      // Lúc này vals.thumbnail là chuỗi Base64 rất dài
       onCreate(vals);
       handleCancel();
     } catch (error) {
@@ -91,22 +102,21 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
           />
         </Form.Item>
 
-        {/* --- KHU VỰC UPLOAD ẢNH (SỬA ĐỔI) --- */}
+        {/* --- KHU VỰC UPLOAD ẢNH --- */}
         
-        {/* 1. Field ẩn chứa giá trị thực (URL string) để Form submit đúng */}
+        {/* Field ẩn chứa chuỗi Base64 để gửi đi */}
         <Form.Item 
           name="thumbnail" 
-          hidden // Ẩn khỏi giao diện
+          hidden 
           rules={[{ required: true, message: "Please upload a thumbnail" }]}
         >
           <Input /> 
         </Form.Item>
 
-        {/* 2. Giao diện Upload (Không có name="thumbnail" để tránh conflict dữ liệu) */}
         <Form.Item label="Thumbnail" required>
           <Dragger
             accept="image/*"
-            beforeUpload={handleUpload}
+            beforeUpload={handleUpload} // Hàm này giờ trả về Base64
             maxCount={1}
             showUploadList={false}
             style={{ padding: 20, background: '#fafafa' }}
