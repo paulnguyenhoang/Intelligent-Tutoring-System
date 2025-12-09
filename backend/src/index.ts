@@ -54,13 +54,16 @@ const studentController = new StudentController(
 
 const quizController = new QuizController(new QuizService());
 
+// Configure multer middleware
+const upload = multer({ storage: multer.memoryStorage() });
+
 ex.post("/register", authController.RegisterController);
 
 ex.get("/verify", authController.VerifyUserController);
 
-ex.post('/instructor/course', [multer().single, allowRole(Role.INSTRUCTOR)] ,instructorController.createCourse)
+ex.post('/instructor/course', [upload.single('thumbnail'), allowRole(Role.INSTRUCTOR)] ,instructorController.createCourse)
 
-ex.post('/instructor/lesson',[multer().single, allowRole(Role.INSTRUCTOR)] ,instructorController.createLesson)
+ex.post('/instructor/lesson',[upload.single('content'), allowRole(Role.INSTRUCTOR)] ,instructorController.createLesson)
 
 ex.delete('/instructor/lesson',[allowRole(Role.INSTRUCTOR)],  instructorController.deleteLesson)
 
