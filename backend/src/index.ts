@@ -61,13 +61,13 @@ ex.get("/api/verify", authController.VerifyUserAPIController);
 
 ex.post(
   "/instructor/course",
-  [multer().single, allowRole(Role.INSTRUCTOR)],
+  [multer().single('thumbnail'), allowRole(Role.INSTRUCTOR)],
   instructorController.createCourse
 );
 
 ex.post(
   "/instructor/lesson",
-  [multer().single, allowRole(Role.INSTRUCTOR)],
+  [multer().single('content'), allowRole(Role.INSTRUCTOR)],
   instructorController.createLesson
 );
 

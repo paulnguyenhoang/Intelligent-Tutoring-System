@@ -2,8 +2,7 @@ import React from 'react';
 import { Card, Tag, Typography, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
-const { Meta } = Card;
-const { Paragraph, Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 // Định nghĩa lại Interface cho khớp với dữ liệu của bạn
 interface Instructor {
@@ -28,6 +27,24 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
+  // Convert Blob to URL if needed
+  const getThumbnailUrl = (): string => {
+    if (!course.thumbnail) {
+      return "https://placehold.co/600x400?text=No+Image";
+    }
+    
+    if (typeof course.thumbnail === "string") {
+      return course.thumbnail;
+    }
+    
+    // If it's a Blob object, create a URL
+    if (course.thumbnail && typeof course.thumbnail === "object") {
+      return URL.createObjectURL(course.thumbnail as Blob);
+    }
+    
+    return "https://placehold.co/600x400?text=No+Image";
+  };
+
   return (
     <Card
       hoverable
@@ -41,7 +58,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
         <div style={{ height: 180, position: 'relative', overflow: 'hidden' }}>
           <img
             alt={course.title}
-            src={course.thumbnail || "https://placehold.co/600x400?text=No+Image"}
+            src={getThumbnailUrl()}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
           

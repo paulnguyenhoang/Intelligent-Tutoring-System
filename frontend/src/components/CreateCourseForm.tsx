@@ -1,44 +1,37 @@
 import { useState } from "react";
 import { Modal, Form, Input, Select, Upload, message } from "antd";
 import { InboxOutlined, CloudUploadOutlined } from "@ant-design/icons";
-import type { Course } from "../types";
 import type { RcFile } from "antd/es/upload/interface";
+import { createCourse } from "../services/apiService";
 
 const { Dragger } = Upload;
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreate: (payload: Omit<Course, "id">) => void;
+  onSuccess?: () => void;
 };
 
-const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
+const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // Hàm chuyển đổi File sang Base64
-  const convertFileToBase64 = (file: RcFile): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file); // Đọc file dưới dạng Data URL (Base64)
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  const [uploadedFile, setUploadedFile] = useState<RcFile | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleUpload = async (file: RcFile) => {
     try {
-      // 1. Chuyển file sang chuỗi Base64
-      const base64String = await convertFileToBase64(file);
+      // 1. Store the actual File object for upload
+      setUploadedFile(file);
       
-      // 2. Gán chuỗi Base64 này vào form field 'thumbnail'
-      form.setFieldValue("thumbnail", base64String);
+      // 2. Create a preview URL from the file
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
       
-      // 3. Hiển thị ảnh preview bằng chính chuỗi Base64 đó
-      setPreviewImage(base64String);
+      // 3. Store file object in form (as placeholder, actual file will be sent separately)
+      form.setFieldValue("thumbnail", file.name);
       
       message.success("Thumbnail selected successfully!");
-    } catch (err) {
+    } catch {
       message.error("Failed to select image");
     }
     return false; // Chặn upload mặc định
@@ -46,24 +39,34 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
 
   const onOk = async () => {
     try {
+      setLoading(true);
       const vals = await form.validateFields();
-      
-      // Nếu chưa có ảnh thì dùng ảnh mặc định
-      if (!vals.thumbnail) {
-        vals.thumbnail = "https://placehold.co/600x400?text=No+Image";
-      }
 
-      // Lúc này vals.thumbnail là chuỗi Base64 rất dài
-      onCreate(vals);
+      // Tạo course data object
+      const courseData = {
+        title: vals.title,
+        category: vals.category,
+        description: vals.description || "",
+      };
+
+      // Gọi apiService.createCourse() trực tiếp
+      await createCourse(courseData, uploadedFile || undefined);
+
+      message.success("Course created successfully!");
+      onSuccess?.(); // Gọi callback để parent refresh danh sách
       handleCancel();
     } catch (error) {
-      console.log("Validate Failed:", error);
+      console.error("Failed to create course:", error);
+      message.error("Failed to create course");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
     form.resetFields();
     setPreviewImage(null);
+    setUploadedFile(null);
     onClose();
   };
 
@@ -75,6 +78,7 @@ const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
       onCancel={handleCancel}
       destroyOnClose
       width={600}
+      okButtonProps={{ loading }}
     >
       <Form form={form} layout="vertical">
         <Form.Item
