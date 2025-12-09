@@ -1,6 +1,7 @@
 import { CourseStatus } from "../enum/course_status"
 import { Lesson } from "./lesson"
 import crypto from 'crypto'
+import uuid from 'uuid'
 
 export class Course{
     public id: string 
@@ -25,7 +26,7 @@ export class Course{
         thumbnail?: Blob,
         id?: string
     ){
-        this.id = id ? id : String(crypto.randomInt(1000000000,10000000000))
+        this.id = id ? id : uuid.v4()
         this.title = title
         this.description = description
         this.instructorID = instructorID

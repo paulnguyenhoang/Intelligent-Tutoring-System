@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { LearningMaterial } from "../../interface/abstract/learning_material"
+import uuid from 'uuid'
 
 export class Lesson{
     public id: string
@@ -12,7 +13,7 @@ export class Lesson{
         course: string,
         id?: string
     ){
-        this.id = id ? id : String(crypto.randomInt(1000000000,10000000000))
+        this.id = id ? id : uuid.v4()
         this.title = title
         this.course = course
         this.materials = materials
