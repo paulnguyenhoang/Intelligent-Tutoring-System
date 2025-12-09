@@ -2,7 +2,6 @@ import { ICourseService } from "../interface/service/course"
 import { ILessonService } from "../interface/service/lesson"
 import { Request, Response } from "express"
 import FormData from "form-data"
-import uuid from 'uuid'
 import {constants} from 'http2'
 
 export class CommonController{

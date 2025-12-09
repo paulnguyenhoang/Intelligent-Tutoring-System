@@ -1,5 +1,4 @@
 import { UserDTO } from "../dto/user";
-import uuid from 'uuid'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import { IUserRepository } from "../interface/repository/user";
@@ -49,7 +48,7 @@ export class AuthService implements IAuthService{
         const verifyToken = crypto.randomBytes(36).toString('hex')
         if (user.role === 'student')
             obj = new Student(
-                uuid.v4(),
+                crypto.randomUUID(),
                 user.username,
                 bcrypt.hashSync(user.password,10),
                 user.email,
@@ -58,7 +57,7 @@ export class AuthService implements IAuthService{
             )
         else
             obj = new Instructor(
-                uuid.v4(),
+                crypto.randomUUID(),
                 user.username,
                 bcrypt.hashSync(user.password,10),
                 user.email,

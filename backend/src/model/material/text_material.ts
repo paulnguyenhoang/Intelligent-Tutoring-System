@@ -1,7 +1,7 @@
 import { LearningMaterial } from "../../interface/abstract/learning_material";
 import { FileFormat } from "../enum/file_format";
 import { MaterialType } from "../enum/material_type";
-import uuid from 'uuid'
+import crypto from 'crypto'
 
 export class TextMaterial implements LearningMaterial{
     public id: string
@@ -16,7 +16,7 @@ export class TextMaterial implements LearningMaterial{
         size: string,
         id?: string
     ){
-        this.id = id ? id : uuid.v4()
+        this.id = id ? id : crypto.randomUUID()
         this.type = type
         this.content = content
         this.size = size

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { constants } from "http2";
-import uuid from "uuid";
+import crypto from "crypto";
 import { db } from "../config/database";
 
 type FrontendQuizQuestion = {
@@ -117,7 +117,7 @@ export class QuizController {
 
   private buildInsertQuestions(quizID: string, questions: FrontendQuizQuestion[]) {
     return questions.map((q) => ({
-      id: q.id ?? uuid.v4(),
+      id: q.id ?? crypto.randomUUID(),
       quiz: quizID,
       title: q.content,
       difficulty: 1,
@@ -135,7 +135,7 @@ export class QuizController {
       res.status(constants.HTTP_STATUS_BAD_REQUEST).json({ message: "Invalid payload" });
       return;
     }
-    const quizID = uuid.v4();
+    const quizID = crypto.randomUUID();
     await db.tx(async (t) => {
       await t.none(
         'INSERT INTO quiz(id, title, "timeLimit", "minPassScore", "maxAttempts", status) VALUES(${id}, ${title}, ${timeLimit}, ${minPassScore}, ${maxAttempts}, ${status})',
@@ -245,7 +245,7 @@ export class QuizController {
     const percentage = (correct / total) * 100;
     const passed = percentage >= (quizRow.minPassScore ?? 70);
     const feedback = passed ? "Passed" : "Try again";
-    const attemptID = uuid.v4();
+    const attemptID = crypto.randomUUID();
 
     await db.none(
       'INSERT INTO quiz_attempt("attemptID", "studentID", "quizID", answers, "totalScore", feedback) VALUES(${attemptID}, ${studentID}, ${quizID}, ${answers}, ${totalScore}, ${feedback})',

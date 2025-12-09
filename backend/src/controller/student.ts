@@ -3,7 +3,7 @@ import { ICourseService } from "../interface/service/course"
 import { ILessonService } from "../interface/service/lesson"
 import { Request, Response } from "express"
 import FormData from "form-data"
-import uuid from 'uuid'
+import crypto from 'crypto'
 
 export class StudentController{
     public courseService: ICourseService
@@ -34,7 +34,7 @@ export class StudentController{
         form.append('courses', JSON.stringify(coursesWithNoFile))
         coursesResult.forEach(
             (val,idx) => {
-                form.append(`content#${idx}`, val.thumbnail, uuid.v4() + '.png')
+                form.append(`content#${idx}`, val.thumbnail, crypto.randomUUID() + '.png')
             }
         )
         form.pipe(res)

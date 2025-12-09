@@ -4,7 +4,7 @@ import { ICourseService } from '../interface/service/course'
 import { LessonWithFilesDTO, LessonWithNoFileDTO } from '../dto/lesson'
 import {constants} from 'http2'
 import { ILessonService } from '../interface/service/lesson'
-import uuid from 'uuid'
+import crypto from 'crypto'
 import FormData from 'form-data'
 
 export class InstructorController{
@@ -86,7 +86,7 @@ export class InstructorController{
         form.append('courses', JSON.stringify(coursesWithNoFile))
         coursesResult.forEach(
             (val,idx) => {
-                form.append(`content#${idx}`, val.thumbnail, uuid.v4() + '.png')
+                form.append(`content#${idx}`, val.thumbnail, crypto.randomUUID() + '.png')
             }
         )
         form.pipe(res)
