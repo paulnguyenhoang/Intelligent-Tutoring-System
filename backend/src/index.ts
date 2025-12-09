@@ -1,23 +1,3 @@
-<<<<<<< HEAD
-import express, {json, Request, Response} from 'express'
-import { UserDTO } from './dto/user'
-import { AuthController } from './controller/auth'
-import { AuthService } from './service/auth'
-import { UserRepository } from './repository/user'
-import { EmailService } from './service/email'
-import { db } from './config/database'
-import multer from 'multer'
-import { InstructorController } from './controller/instructor'
-import { CourseService } from './service/course'
-import { CourseRepository } from './repository/course'
-import { LessonService } from './service/lesson'
-import { LessonRepository } from './repository/lesson'
-import { CommonController } from './controller/common'
-import { StudentController } from './controller/student'
-import { JWTService } from './service/jwt'
-import { allowRole } from './extra/middleware/role'
-import { Role } from './model/enum/role'
-=======
 import express, { json, Request, Response } from "express";
 import cors from "cors";
 import { UserDTO } from "./dto/user";
@@ -34,7 +14,9 @@ import { LessonService } from "./service/lesson";
 import { LessonRepository } from "./repository/lesson";
 import { CommonController } from "./controller/common";
 import { StudentController } from "./controller/student";
->>>>>>> 4c9a78ae5278fd0cf3b182abbabb76950ede3afb
+import { JWTService } from "./service/jwt";
+import { allowRole } from "./extra/middleware/role";
+import { Role } from "./model/enum/role";
 
 const ex = express();
 
@@ -49,7 +31,8 @@ ex.use(
 ex.use(json());
 
 const authController = new AuthController(
-  new AuthService(new UserRepository(db), new EmailService())
+    new AuthService(new UserRepository(db), new EmailService()),
+    new JWTService()
 );
 
 const instructorController = new InstructorController(
