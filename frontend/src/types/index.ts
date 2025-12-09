@@ -1,6 +1,7 @@
 export type UserRole = "teacher" | "student";
 
 export type User = {
+  id?: string;
   username: string;
   role: UserRole;
   password?: string;
@@ -25,7 +26,7 @@ export type Course = {
 };
 
 export type Question = {
-  id: string;
+  id?: string;
   content: string;
   options: {
     A: string;
@@ -35,7 +36,6 @@ export type Question = {
   };
   correctAnswer: "A" | "B" | "C" | "D";
   hint?: string;
-  feedback?: string;
 };
 
 export type Quiz = {

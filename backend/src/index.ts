@@ -33,8 +33,8 @@ ex.use(
 ex.use(json());
 
 const authController = new AuthController(
-    new AuthService(new UserRepository(db), new EmailService()),
-    new JWTService()
+  new AuthService(new UserRepository(db), new EmailService()),
+  new JWTService()
 );
 
 const instructorController = new InstructorController(
@@ -54,38 +54,42 @@ const studentController = new StudentController(
 
 const quizController = new QuizController(new QuizService());
 
-// Configure multer middleware
-const upload = multer({ storage: multer.memoryStorage() });
-
 ex.post("/register", authController.RegisterController);
 
 ex.get("/verify", authController.VerifyUserController);
+ex.get("/api/verify", authController.VerifyUserAPIController);
 
-ex.post('/instructor/course', [upload.single('thumbnail'), allowRole(Role.INSTRUCTOR)] ,instructorController.createCourse)
+ex.post(
+  "/instructor/course",
+  [multer().single, allowRole(Role.INSTRUCTOR)],
+  instructorController.createCourse
+);
 
-ex.post('/instructor/lesson',[upload.single('content'), allowRole(Role.INSTRUCTOR)] ,instructorController.createLesson)
+ex.post(
+  "/instructor/lesson",
+  [multer().single, allowRole(Role.INSTRUCTOR)],
+  instructorController.createLesson
+);
 
-ex.delete('/instructor/lesson',[allowRole(Role.INSTRUCTOR)],  instructorController.deleteLesson)
+ex.delete("/instructor/lesson", [allowRole(Role.INSTRUCTOR)], instructorController.deleteLesson);
 
-ex.delete('/instructor/course',[allowRole(Role.INSTRUCTOR)], instructorController.deleteCourse)
+ex.delete("/instructor/course", [allowRole(Role.INSTRUCTOR)], instructorController.deleteCourse);
 
-ex.get('/instructor/courses/:id',[allowRole(Role.INSTRUCTOR)], instructorController.getCourses)
+ex.get("/instructor/courses/:id", [allowRole(Role.INSTRUCTOR)], instructorController.getCourses);
 
-ex.get('/student/courses',[allowRole(Role.STUDENT)], studentController.getCourses)
+ex.get("/student/courses", [allowRole(Role.STUDENT)], studentController.getCourses);
 
-ex.get('/instructor/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLessons)
+ex.get("/instructor/lessons/:id", [allowRole(Role.STUDENT)], commonController.getLessons);
 
-ex.get('/student/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLessons)
-
-
+ex.get("/student/lessons/:id", [allowRole(Role.STUDENT)], commonController.getLessons);
 
 ex.post("/login", authController.LoginController);
 
-ex.get("/quizzes", quizController.list);
+ex.get("/quizzes",quizController.list);
 ex.get("/quizzes/:id", quizController.getOne);
-ex.post("/quizzes", quizController.create);
-ex.put("/quizzes/:id", quizController.update);
-ex.delete("/quizzes/:id", quizController.remove);
+ex.post("/quizzes", [allowRole(Role.INSTRUCTOR)], quizController.create);
+ex.put("/quizzes/:id", [allowRole(Role.INSTRUCTOR)], quizController.update);
+ex.delete("/quizzes/:id", [allowRole(Role.INSTRUCTOR)], quizController.remove);
 ex.post("/quizzes/:id/submit", quizController.submit);
 ex.get("/quizzes/:id/completion", quizController.completion);
 

@@ -30,21 +30,34 @@ export async function register(payload: RegisterPayload): Promise<void> {
   return response.json();
 }
 
-export async function login(payload: LoginPayload): Promise<boolean> {
-  const response = await fetch(`${API_BASE_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+export interface LoginResponse {
+  token: string;
+  id: string;
+}
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Login failed" }));
-    throw new Error(error.message || "Login failed");
+export async function login(payload: LoginPayload): Promise<LoginResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      // Login successful, backend returns { token: string, id: string }
+      const data = await response.json();
+      return data;
+    } else {
+      // Login failed (401 or other error)
+      return null;
+    }
+  } catch (error) {
+    // Network error or other exception
+    console.error("Login error:", error);
+    throw new Error("Unable to connect to server. Please try again.");
   }
-
-  return response.json();
 }
 
 export async function verifyUser(id: string, token: string): Promise<{ status: boolean }> {

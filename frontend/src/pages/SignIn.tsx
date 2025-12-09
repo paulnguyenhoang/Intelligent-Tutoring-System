@@ -1,6 +1,6 @@
-import { Button, Form, Input, Select, message } from "antd";
+import { Button, Form, Input, Select, Modal } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOutlined } from "@ant-design/icons";
+import { BookOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { useAuth } from "../hooks";
 import { ROUTES } from "../constants";
 import type { UserRole } from "../types";
@@ -15,35 +15,90 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values: { username: string; password: string; role: UserRole }) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       // Map role: 'teacher' -> 'instructor' for backend
       const backendRole = values.role === "teacher" ? "instructor" : "student";
 
       // Call backend API to authenticate
-      const isAuthenticated = await loginAPI({
+      const loginResponse = await loginAPI({
         username: values.username,
         password: values.password,
         role: backendRole,
       });
 
-      if (isAuthenticated) {
-        // Show success message
-        message.success("Login successful!");
+      // Always stop loading immediately after getting response
+      setLoading(false);
 
-        // Login user in frontend
-        login({ username: values.username, role: values.role });
-
-        // Navigate to appropriate dashboard
-        window.location.href = getRedirectPath(values.role);
+      if (loginResponse) {
+        // Show success modal
+        Modal.success({
+          title: "Login Successful!",
+          icon: <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+          content: (
+            <div style={{ fontSize: "16px", padding: "10px 0" }}>
+              <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+                Welcome back, <strong>{values.username}</strong>!
+              </p>
+              <p style={{ fontSize: "14px", color: "#666" }}>Redirecting to your dashboard...</p>
+            </div>
+          ),
+          okText: "Continue",
+          centered: true,
+          width: 460,
+          onOk: () => {
+            // Login user in frontend and save JWT + ID to localStorage
+            login(
+              { id: loginResponse.id, username: values.username, role: values.role },
+              loginResponse.token,
+              loginResponse.id
+            );
+            // Navigate to appropriate dashboard
+            window.location.href = getRedirectPath(values.role);
+          },
+        });
       } else {
-        message.error("Invalid username, password, or role. Please try again.");
+        // Show error modal for invalid credentials
+        Modal.error({
+          title: "Login Failed",
+          icon: <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+          content: (
+            <div style={{ fontSize: "16px", padding: "10px 0" }}>
+              <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+                <strong>Invalid credentials!</strong>
+              </p>
+              <p style={{ fontSize: "14px", color: "#666" }}>
+                Please check your username, password, and role, then try again.
+              </p>
+            </div>
+          ),
+          okText: "Try Again",
+          centered: true,
+          width: 460,
+        });
       }
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "Login failed. Please try again.");
-    } finally {
+      // Stop loading on error
       setLoading(false);
+
+      // Show error modal for any other errors
+      Modal.error({
+        title: "Login Error",
+        icon: <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+        content: (
+          <div style={{ fontSize: "16px", padding: "10px 0" }}>
+            <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+              <strong>An error occurred during login</strong>
+            </p>
+            <p style={{ fontSize: "14px", color: "#666" }}>
+              {error instanceof Error ? error.message : "Please try again later."}
+            </p>
+          </div>
+        ),
+        okText: "Close",
+        centered: true,
+        width: 460,
+      });
     }
   };
 

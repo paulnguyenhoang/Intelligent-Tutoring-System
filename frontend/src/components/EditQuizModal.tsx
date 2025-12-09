@@ -28,7 +28,6 @@ interface FormValues {
     optionD: string;
     correctAnswer: "A" | "B" | "C" | "D";
     hint?: string;
-    feedback?: string;
   }>;
 }
 
@@ -51,7 +50,6 @@ export default function EditQuizModal({ open, onCancel, onSubmit, quiz }: EditQu
           optionD: q.options.D,
           correctAnswer: q.correctAnswer,
           hint: q.hint,
-          feedback: q.feedback,
         })),
       });
     }
@@ -70,7 +68,8 @@ export default function EditQuizModal({ open, onCancel, onSubmit, quiz }: EditQu
         timeLimit: values.timeLimit,
         passingScore: values.passingScore,
         questions: values.questions.map((q, idx) => ({
-          id: `q${idx + 1}`,
+          // Keep existing question ID when editing
+          id: quiz.questions[idx]?.id,
           content: q.content,
           options: {
             A: q.optionA,
@@ -80,7 +79,6 @@ export default function EditQuizModal({ open, onCancel, onSubmit, quiz }: EditQu
           },
           correctAnswer: q.correctAnswer,
           hint: q.hint,
-          feedback: q.feedback,
         })),
       };
 

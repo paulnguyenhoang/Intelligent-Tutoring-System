@@ -1,6 +1,8 @@
 // LocalStorage keys
 export const STORAGE_KEYS = {
   USER: "its_user",
+  JWT: "its_jwt",
+  USER_ID: "its_user_id",
   USERS: "its_users",
   COURSES: "its_courses",
   QUIZZES: "its_quizzes",

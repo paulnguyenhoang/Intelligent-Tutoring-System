@@ -115,7 +115,7 @@ export default function QuestionFormItem({
         </Radio.Group>
       </Form.Item>
 
-      {/* ITS Features - Hint & Feedback */}
+      {/* ITS Features - Hint */}
       <Collapse
         ghost
         className={styles.advancedSettings}
@@ -125,7 +125,7 @@ export default function QuestionFormItem({
             label: (
               <Space>
                 <SettingOutlined />
-                <Text strong>Advanced Settings (Hint & Feedback)</Text>
+                <Text strong>Advanced Settings (Hint)</Text>
               </Space>
             ),
             children: (
@@ -137,15 +137,6 @@ export default function QuestionFormItem({
                   tooltip="A helpful hint for students who get this question wrong"
                 >
                   <TextArea rows={2} placeholder="Provide a hint to help students..." />
-                </Form.Item>
-
-                <Form.Item
-                  {...field}
-                  name={[field.name, "feedback"]}
-                  label="Feedback (Optional)"
-                  tooltip="Feedback shown after answering"
-                >
-                  <TextArea rows={2} placeholder="Explain why this is the correct answer..." />
                 </Form.Item>
               </div>
             ),
