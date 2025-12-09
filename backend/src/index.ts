@@ -13,6 +13,9 @@ import { LessonService } from './service/lesson'
 import { LessonRepository } from './repository/lesson'
 import { CommonController } from './controller/common'
 import { StudentController } from './controller/student'
+import { JWTService } from './service/jwt'
+import { allowRole } from './extra/middleware/role'
+import { Role } from './model/enum/role'
 
 const ex = express()
 
@@ -24,7 +27,8 @@ const authController = new AuthController(
             db
         ),
         new EmailService()
-    )
+    ),
+    new JWTService()
 )
 
 const instructorController = new InstructorController(
@@ -58,21 +62,23 @@ ex.post('/register', authController.RegisterController)
 
 ex.get('/verify', authController.VerifyUserController)
 
-ex.post('/instructor/course', multer().single ,instructorController.createCourse)
+ex.post('/instructor/course', [multer().single, allowRole(Role.INSTRUCTOR)] ,instructorController.createCourse)
 
-ex.post('/instructor/lesson', multer().single ,instructorController.createLesson)
+ex.post('/instructor/lesson',[multer().single, allowRole(Role.INSTRUCTOR)] ,instructorController.createLesson)
 
-ex.delete('/instructor/lesson', instructorController.deleteLesson)
+ex.delete('/instructor/lesson',[allowRole(Role.INSTRUCTOR)],  instructorController.deleteLesson)
 
-ex.delete('/instructor/course', instructorController.deleteCourse)
+ex.delete('/instructor/course',[allowRole(Role.INSTRUCTOR)], instructorController.deleteCourse)
 
-ex.get('/instructor/courses/:id', instructorController.getCourses)
+ex.get('/instructor/courses/:id',[allowRole(Role.INSTRUCTOR)], instructorController.getCourses)
 
-ex.get('/student/courses', studentController.getCourses)
+ex.get('/student/courses',[allowRole(Role.STUDENT)], studentController.getCourses)
 
-ex.get('/instructor/lessons/:id', commonController.getLessons)
+ex.get('/instructor/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLessons)
 
-ex.get('/student/lessons/:id', commonController.getLessons)
+ex.get('/student/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLessons)
+
+
 
 ex.post('/login', authController.LoginController)
 

@@ -50,6 +50,18 @@ export class QuizRepository implements IQuizRepository{
         }
         return quizzes
     }
+    public async findAllQuizzes(){
+        const quizResult = await db.manyOrNone(
+            'SELECT id, title, "timeLimit", "minPassScore", "maxAttempts" FROM quiz WHERE status = 1'
+        )
+        return quizResult.map(
+            val => {
+                const quiz: Quiz = {
+                    
+                }
+            }
+        )
+    }
     public async findQuizByID(
         id: string
     ){

@@ -8,6 +8,7 @@ import { IEmailService } from "../interface/service/email";
 import { Student } from "../model/user/student";
 import { Role } from "../model/enum/role";
 import { Instructor } from "../model/user/instructor";
+import { stringToRole } from "../extra/role";
 
 export class AuthService implements IAuthService{
     public userRepository: IUserRepository
@@ -24,24 +25,21 @@ export class AuthService implements IAuthService{
         password: string,
         role: string
     ){
-        let userRole
-        switch (role) {
-            case 'student':
-                userRole = Role.STUDENT
-                break;
-        
-            default:
-                userRole = Role.INSTRUCTOR
-                break;
-        }
         try{
-            const result = await this.userRepository.findByUsername(
+            let result = await this.userRepository.findByUsername(
                 username
             )
-            return result.role === userRole && result.isActive && bcrypt.compareSync(password,result.passwordHash)
+            if (result.role === stringToRole(role) && result.isActive && bcrypt.compareSync(password,result.passwordHash)){
+                result.lastLogin = new Date()
+                await this.userRepository.save(
+                    result
+                ) 
+                return result
+            }
+            else return null
         }
         catch(_){
-            return false
+            return null
         }
     }
     public async register(
@@ -99,8 +97,6 @@ export class AuthService implements IAuthService{
             }
             return false
         } catch (error) {
-            console.log(error);
-            
             return false            
         }
     }

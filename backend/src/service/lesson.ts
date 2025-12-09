@@ -1,4 +1,5 @@
 import { LessonWithFilesDTO } from "../dto/lesson";
+import { stringToFormat } from "../extra/file_format";
 import { ILessonRepository } from "../interface/repository/lesson";
 import { ILessonService } from "../interface/service/lesson";
 import { Lesson } from "../model/entity/lesson";
@@ -17,21 +18,6 @@ export class LessonService implements ILessonService{
     public async createLesson(
         lesson: LessonWithFilesDTO
     ){
-        let type
-        switch (lesson.type) {
-            case 'WORD':
-                type = FileFormat.DOCX
-                break;
-            case 'PDF':
-                type = FileFormat.PDF
-                break
-            case 'TEXT':
-                type = FileFormat.TXT
-                break
-            default:
-                type = FileFormat.PPTX
-                break;
-        }
         await this.lessonRepository.save(
             new Lesson(
                 lesson.title,
@@ -42,7 +28,7 @@ export class LessonService implements ILessonService{
                 ) : new TextMaterial(
                     MaterialType.TEXT,
                     lesson.content as Blob,
-                    type,
+                    stringToFormat(lesson.type),
                     lesson.duration
                 ),
                 lesson.course

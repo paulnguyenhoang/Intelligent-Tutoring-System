@@ -17,10 +17,11 @@ export class InstructorController{
         this.courseService = courseService
         this.lessonService = lessonService
     }
-    public createCourse = async (req: Request<{},{},CourseWithNoFileDTO>, res: Response) => {
+    public createCourse = async (req: Request, res: Response) => {
         const thumbnail = req.file
+        const data = (JSON.parse(req.body.data) as CourseWithNoFileDTO)
         let dto: CourseWithFilesDTO = {
-            ...req.body,
+            ...data,
             thumbnail: new Blob([new Uint8Array(thumbnail?.buffer!)], {
                 type: thumbnail?.mimetype
             })
@@ -33,10 +34,11 @@ export class InstructorController{
         .status(constants.HTTP_STATUS_OK)
         .json('ok')
     }
-    public createLesson = async (req: Request<{},{},LessonWithNoFileDTO>, res: Response) => {
+    public createLesson = async (req: Request, res: Response) => {
         const content = req.file
+        const data = JSON.parse(req.body.data) as LessonWithNoFileDTO
         let dto: LessonWithFilesDTO = {
-            ...req.body,
+            ...data,
             content: new Blob([new Uint8Array(content?.buffer!)], {
                 type: content?.mimetype
             })
@@ -89,4 +91,5 @@ export class InstructorController{
         )
         form.pipe(res)
     }
+
 }

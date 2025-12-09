@@ -3,26 +3,42 @@ import { IAuthService } from "../interface/service/auth";
 import { UserDTO } from "../dto/user";
 import {constants} from 'http2'
 import { UserVerifyDTO } from "../dto/user_verify";
+import { IJWTService } from "../interface/service/jwt";
 
 export class AuthController{
     public authService: IAuthService
+    public jwtService: IJWTService
     public constructor(
-        authService: IAuthService
+        authService: IAuthService,
+        jwtService: IJWTService
     ){
         this.authService = authService
+        this.jwtService = jwtService
     }
     public LoginController = async (req: Request<{},{},{
         username: string,
         password: string,
         role: 'student' | 'instructor'
     }>,res: Response) => {
-        res
-        .status(constants.HTTP_STATUS_OK)
-        .json(await this.authService.authenticate(
+        const result = await this.authService.authenticate(
             req.body.username,
             req.body.password,
             req.body.role
-        ))
+        )
+        if (
+            result !== null
+        ){
+            res
+            .status(constants.HTTP_STATUS_OK)
+            .json({
+                token: this.jwtService.createToken(
+                    result
+                )
+            })
+            return
+        }
+        res
+        .status(constants.HTTP_STATUS_UNAUTHORIZED)
     }
     public RegisterController = async (req: Request<{},{},UserDTO>,res: Response) => {
         await this.authService.register(req.body)

@@ -1,5 +1,6 @@
 import { db } from "../config/database";
 import { LessonWithFilesDTO } from "../dto/lesson";
+import { formatToMIMEType, formatToString } from "../extra/file_format";
 import { ILessonRepository } from "../interface/repository/lesson";
 import { Lesson } from "../model/entity/lesson";
 import { FileFormat } from "../model/enum/file_format";
@@ -87,33 +88,13 @@ export class LessonRepository implements ILessonRepository{
         )
         let lessons: LessonWithFilesDTO[] = []
         for (const val of lessonAndMaterialResult){
-            let type
-            let mimetype
-            switch(val.format as FileFormat){
-                case FileFormat.DOCX:
-                    type = 'WORD'
-                    mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                    break
-                case FileFormat.PDF:
-                    type = 'PDF'
-                    mimetype = 'application/pdf'
-                    break
-                case FileFormat.TXT:
-                    type = 'TEXT'
-                    mimetype = 'text/plain'
-                    break
-                default:
-                    type = 'PPT'
-                    mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-                    break
-            }
             let lesson: LessonWithFilesDTO = {
                 course: courseID,
                 title: val.title,
-                type: val.type === 0 ? 'VIDEO' : type,
+                type: val.type === 0 ? 'VIDEO' : formatToString(val.format),
                 duration: val.duration,
                 content: val.url ? val.url : new Blob([new Uint8Array(val.content)],{
-                    type: mimetype
+                    type: formatToMIMEType(val.format)
                 }) 
             } 
             lessons.push(

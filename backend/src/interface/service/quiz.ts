@@ -11,6 +11,7 @@ export interface IQuizService{
     quizRepository: IQuizRepository
     quizAttemptRepository: IQuizAttemptRepository
     questionRepository: IQuestionRepository
+    getQuizzes: (instructorID?: string) => Promise<Quiz[]>
     createQuiz: (quiz: QuizDTO) => Promise<Quiz>
     updateQuiz: (quiz: QuizDTO) => Promise<Quiz>
     submitQuiz: (attempt: QuizAttempt) => Promise<void>

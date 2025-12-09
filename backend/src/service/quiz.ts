@@ -30,6 +30,13 @@ export class QuizService implements IQuizService{
         this.quizAttemptRepository = quizAttemptRepository
         this.questionRepository = questionRepository
     }
+    public async getQuizzes(
+        instructorID?: string
+    ){
+        if (instructorID === undefined){
+            
+        }
+    }
     public async submitQuiz(
         attempt: QuizAttempt
     ){
