@@ -6,12 +6,12 @@ import crypto from 'crypto'
 export class TextMaterial implements LearningMaterial{
     public id: string
     public type: MaterialType
-    public content: Blob
+    public content: Buffer<ArrayBuffer>
     public format: FileFormat
     public size: string
     public constructor(
         type: MaterialType,
-        content: Blob,
+        content: Buffer<ArrayBuffer>,
         format: FileFormat,
         size: string,
         id?: string
