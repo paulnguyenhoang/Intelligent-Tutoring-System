@@ -4,6 +4,8 @@ import { UserDTO } from "../dto/user";
 import { constants } from "http2";
 import { UserVerifyDTO } from "../dto/user_verify";
 import { IJWTService } from "../interface/service/jwt";
+import { Student } from "../model/user/student";
+import { Instructor } from "../model/user/instructor";
 
 export class AuthController {
   public authService: IAuthService;
@@ -32,6 +34,7 @@ export class AuthController {
     if (result !== null) {
       res.status(constants.HTTP_STATUS_OK).json({
         token: this.jwtService.createToken(result),
+        id: result instanceof Student ? result.studentID : (result as Instructor).employeeID
       });
       return;
     }
