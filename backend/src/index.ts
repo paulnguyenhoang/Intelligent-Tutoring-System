@@ -61,13 +61,13 @@ ex.get("/api/verify", authController.VerifyUserAPIController);
 
 ex.post(
   "/instructor/course",
-  [multer().single('thumbnail'), allowRole(Role.INSTRUCTOR)],
+  [multer().single('thumbnail')],
   instructorController.createCourse
 );
 
 ex.post(
   "/instructor/lesson",
-  [multer().single('content'), allowRole(Role.INSTRUCTOR)],
+  [multer().single('content')],
   instructorController.createLesson
 );
 
@@ -75,7 +75,7 @@ ex.delete("/instructor/lesson", [allowRole(Role.INSTRUCTOR)], instructorControll
 
 ex.delete("/instructor/course", [allowRole(Role.INSTRUCTOR)], instructorController.deleteCourse);
 
-ex.get("/instructor/courses/:id", [allowRole(Role.INSTRUCTOR)], instructorController.getCourses);
+ex.get("/instructor/courses/:id",  instructorController.getCourses);
 
 ex.get("/student/courses", [allowRole(Role.STUDENT)], studentController.getCourses);
 

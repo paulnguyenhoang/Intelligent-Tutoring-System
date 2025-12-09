@@ -121,7 +121,7 @@ export async function createCourse(
   courseData: Omit<Course, "id" | "instructor">,
   thumbnailFile?: File
 ): Promise<void> {
-  const userId = getUserId();
+  const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
   if (!userId) {
     throw new Error("User not authenticated");
   }
