@@ -17,6 +17,7 @@ import { StudentController } from "./controller/student";
 import { JWTService } from "./service/jwt";
 import { allowRole } from "./extra/middleware/role";
 import { Role } from "./model/enum/role";
+import { QuizController } from "./controller/quiz";
 
 const ex = express();
 
@@ -50,6 +51,8 @@ const studentController = new StudentController(
   new LessonService(new LessonRepository())
 );
 
+const quizController = new QuizController();
+
 ex.post("/register", authController.RegisterController);
 
 ex.get("/verify", authController.VerifyUserController);
@@ -73,6 +76,14 @@ ex.get('/student/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLes
 
 
 ex.post("/login", authController.LoginController);
+
+ex.get("/quizzes", quizController.list);
+ex.get("/quizzes/:id", quizController.getOne);
+ex.post("/quizzes", quizController.create);
+ex.put("/quizzes/:id", quizController.update);
+ex.delete("/quizzes/:id", quizController.remove);
+ex.post("/quizzes/:id/submit", quizController.submit);
+ex.get("/quizzes/:id/completion", quizController.completion);
 
 ex.listen(3001, () => {
   console.log("Listening on port 3001");
