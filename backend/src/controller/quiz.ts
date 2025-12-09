@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { constants } from "http2";
-import { Request, Response } from "express";
-import { constants } from "http2";
 import { FrontendQuiz, QuizFacadeService } from "../service/quiz_facade";
 
 export class QuizController {

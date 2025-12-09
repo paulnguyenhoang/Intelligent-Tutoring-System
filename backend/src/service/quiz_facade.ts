@@ -212,8 +212,10 @@ export class QuizFacadeService {
     const feedback = passed ? "Passed" : "Try again";
     const attemptID = crypto.randomUUID();
 
+    const completedAt = new Date().toISOString();
+
     await db.none(
-      'INSERT INTO quiz_attempt("attemptID", "studentID", "quizID", answers, "totalScore", feedback) VALUES(${attemptID}, ${studentID}, ${quizID}, ${answers}, ${totalScore}, ${feedback})',
+      'INSERT INTO quiz_attempt("attemptID", "studentID", "quizID", answers, "totalScore", feedback, "completedAt") VALUES(${attemptID}, ${studentID}, ${quizID}, ${answers}, ${totalScore}, ${feedback}, ${completedAt})',
       {
         attemptID,
         studentID: studentId,
@@ -221,10 +223,11 @@ export class QuizFacadeService {
         answers: JSON.stringify(answers),
         totalScore: correct,
         feedback,
+        completedAt,
       }
     );
 
-    return { correct, total, percentage, passed, feedback, attemptId: attemptID, completedAt: new Date().toISOString() };
+    return { correct, total, percentage, passed, feedback, attemptId: attemptID, completedAt };
   }
 
   public async completion(
@@ -234,7 +237,7 @@ export class QuizFacadeService {
     const studentId = await this.resolveStudentIdFromUsername(username);
     if (!studentId) return null;
     const attempt = await db.oneOrNone(
-      'SELECT "attemptID", "totalScore", answers FROM quiz_attempt WHERE "quizID" = ${quizID} AND "studentID" = ${studentID} ORDER BY "attemptID" DESC LIMIT 1',
+      'SELECT "attemptID", "totalScore", answers, "completedAt" FROM quiz_attempt WHERE "quizID" = ${quizID} AND "studentID" = ${studentID} ORDER BY "completedAt" DESC NULLS LAST, "attemptID" DESC LIMIT 1',
       { quizID, studentID: studentId }
     );
     if (!attempt) return null;
@@ -256,7 +259,7 @@ export class QuizFacadeService {
       total,
       percentage,
       passed,
-      completedAt: null,
+      completedAt: attempt.completedAt ? new Date(attempt.completedAt).toISOString() : null,
     };
   }
 }
