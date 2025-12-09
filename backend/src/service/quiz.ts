@@ -169,7 +169,7 @@ export class QuizService implements IQuizReadService, IQuizWriteService {
     }
     const total = questions.length;
     const percentage = (correct / total) * 100;
-    const passed = percentage >= (quizRow.minPassScore ?? 70);
+    const passed = percentage >= (quizRow.passingScore ?? 70);
     const feedback = passed ? "Passed" : "Try again";
     const attemptID = crypto.randomUUID();
     const completedAt = new Date().toISOString();
