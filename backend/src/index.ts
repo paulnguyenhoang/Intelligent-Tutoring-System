@@ -78,11 +78,11 @@ ex.get('/student/lessons/:id',[allowRole(Role.STUDENT)], commonController.getLes
 
 ex.post("/login", authController.LoginController);
 
-ex.get("/quizzes", quizController.list);
+ex.get("/quizzes",quizController.list);
 ex.get("/quizzes/:id", quizController.getOne);
-ex.post("/quizzes", quizController.create);
-ex.put("/quizzes/:id", quizController.update);
-ex.delete("/quizzes/:id", quizController.remove);
+ex.post("/quizzes", [allowRole(Role.INSTRUCTOR)], quizController.create);
+ex.put("/quizzes/:id", [allowRole(Role.INSTRUCTOR)], quizController.update);
+ex.delete("/quizzes/:id", [allowRole(Role.INSTRUCTOR)], quizController.remove);
 ex.post("/quizzes/:id/submit", quizController.submit);
 ex.get("/quizzes/:id/completion", quizController.completion);
 
