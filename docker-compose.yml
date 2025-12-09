@@ -13,8 +13,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ITS
+      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: ["postgres", "-c","log_statement=all"]
+    command: ["postgres", "-c", "log_statement=all"]
     ports:
-      - 5432:5432
+      - 5433:5432

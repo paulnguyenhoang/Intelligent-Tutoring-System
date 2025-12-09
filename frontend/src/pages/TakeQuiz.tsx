@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Input, Typography, Empty } from "antd";
+import { Input, Typography, Empty, message } from "antd";
 import { FireOutlined, SearchOutlined } from "@ant-design/icons";
-import { getQuizzes, evaluate, saveQuizCompletion } from "../services/quizService";
+import { getQuizzes, evaluate, getQuizCompletion } from "../services/quizService";
+import type { QuizCompletion } from "../services/quizService";
 import type { Quiz } from "../types";
 import QuizListView from "../components/QuizListView";
 import QuizTakingView from "../components/QuizTakingView";
 import QuizResultView from "../components/QuizResultView";
+import { useAuth } from "../hooks/useAuth";
 import styles from "./TakeQuiz.module.less";
 
 const { Title } = Typography;
@@ -30,46 +32,63 @@ const QUIZ_SESSION_KEY = "quiz_session_state";
 
 const TakeQuiz = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [completions, setCompletions] = useState<Record<string, QuizCompletion | null>>({});
   const [searchText, setSearchText] = useState("");
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [quizDeadline, setQuizDeadline] = useState<number | null>(null);
+  const { user } = useAuth();
 
-  // Load quizzes and restore session from localStorage
+  // Load quizzes and restore session from localStorage, fetch completion from backend
   useEffect(() => {
-    const allQuizzes = getQuizzes();
-    setQuizzes(allQuizzes);
+    const load = async () => {
+      try {
+        const allQuizzes = await getQuizzes();
+        setQuizzes(allQuizzes);
 
-    // Restore session state
-    try {
-      const savedSession = localStorage.getItem(QUIZ_SESSION_KEY);
-      if (savedSession) {
-        const session: QuizSessionState = JSON.parse(savedSession);
-
-        // Validate that the quiz still exists before restoring
-        if (session.activeQuizId) {
-          const quizExists = allQuizzes.find((q) => q.id === session.activeQuizId);
-          if (!quizExists) {
-            // Quiz no longer exists, clear the session
-            localStorage.removeItem(QUIZ_SESSION_KEY);
-            return;
-          }
+        if (user?.username) {
+          const results = await Promise.all(
+            allQuizzes.map(async (q) => ({
+              quizId: q.id,
+              completion: await getQuizCompletion(q.id, user.username),
+            }))
+          );
+          const map: Record<string, QuizCompletion | null> = {};
+          results.forEach((r) => {
+            map[r.quizId] = r.completion;
+          });
+          setCompletions(map);
         }
 
-        setActiveQuizId(session.activeQuizId);
-        setCurrentQuestionIndex(session.currentQuestionIndex);
-        setAnswers(session.answers);
-        setQuizResult(session.quizResult);
-        setQuizDeadline(session.quizDeadline);
+        // Restore session state
+        const savedSession = localStorage.getItem(QUIZ_SESSION_KEY);
+        if (savedSession) {
+          const session: QuizSessionState = JSON.parse(savedSession);
+
+          if (session.activeQuizId) {
+            const quizExists = allQuizzes.find((q) => q.id === session.activeQuizId);
+            if (!quizExists) {
+              localStorage.removeItem(QUIZ_SESSION_KEY);
+              return;
+            }
+          }
+
+          setActiveQuizId(session.activeQuizId);
+          setCurrentQuestionIndex(session.currentQuestionIndex);
+          setAnswers(session.answers);
+          setQuizResult(session.quizResult);
+          setQuizDeadline(session.quizDeadline);
+        }
+      } catch (error) {
+        console.error("Error loading quizzes:", error);
+        message.error("Cannot load quizzes from server");
+        localStorage.removeItem(QUIZ_SESSION_KEY);
       }
-    } catch (error) {
-      console.error("Error restoring quiz session:", error);
-      // Clear corrupted session data
-      localStorage.removeItem(QUIZ_SESSION_KEY);
-    }
-  }, []);
+    };
+    load();
+  }, [user?.username]);
 
   // Save session state to localStorage whenever it changes
   useEffect(() => {
@@ -126,48 +145,58 @@ const TakeQuiz = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const quiz = quizzes.find((q) => q.id === activeQuizId);
-    if (!quiz) return;
-
-    const result = evaluate(quiz, answers);
-    const percentage = (result.correct / result.total) * 100;
-    const passed = percentage >= (quiz.passingScore || 70);
-
-    let feedback = "";
-    if (percentage >= 90) {
-      feedback =
-        "Excellent! AI Analysis: You have mastered this topic. Ready for advanced challenges!";
-    } else if (percentage >= 70) {
-      feedback =
-        "Good job! AI recommends reviewing questions you missed to strengthen your understanding.";
-    } else if (percentage >= 50) {
-      feedback =
-        "AI suggests revisiting the course materials, especially the sections related to questions you got wrong.";
-    } else {
-      feedback =
-        "AI recommends taking the course again and practicing more before retaking this assessment.";
+    if (!quiz || !user?.username) {
+      message.error("Missing user or quiz");
+      return;
     }
 
-    const quizResult = {
-      score: result.correct,
-      total: result.total,
-      percentage,
-      passed,
-      feedback,
-    };
+    try {
+      const result = await evaluate(quiz, answers, user.username);
+      const percentage = result.percentage;
+      const passed = result.passed;
 
-    // Save completion to localStorage
-    saveQuizCompletion({
-      quizId: quiz.id,
-      score: result.correct,
-      total: result.total,
-      percentage,
-      passed,
-      completedAt: new Date().toISOString(),
-    });
+      let feedback = "";
+      if (percentage >= 90) {
+        feedback =
+          "Excellent! AI Analysis: You have mastered this topic. Ready for advanced challenges!";
+      } else if (percentage >= 70) {
+        feedback =
+          "Good job! AI recommends reviewing questions you missed to strengthen your understanding.";
+      } else if (percentage >= 50) {
+        feedback =
+          "AI suggests revisiting the course materials, especially the sections related to questions you got wrong.";
+      } else {
+        feedback =
+          "AI recommends taking the course again and practicing more before retaking this assessment.";
+      }
 
-    setQuizResult(quizResult);
+      const quizResult = {
+        score: result.correct,
+        total: result.total,
+        percentage,
+        passed,
+        feedback,
+      };
+
+      setCompletions((prev) => ({
+        ...prev,
+        [quiz.id]: {
+          quizId: quiz.id,
+          score: result.correct,
+          total: result.total,
+          percentage,
+          passed,
+          completedAt: result.completedAt ?? new Date().toISOString(),
+        },
+      }));
+
+      setQuizResult(quizResult);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Submit quiz failed";
+      message.error(msg);
+    }
   };
 
   const filteredQuizzes = quizzes.filter(
@@ -190,7 +219,7 @@ const TakeQuiz = () => {
         quiz={quiz}
         currentQuestionIndex={currentQuestionIndex}
         answers={answers}
-        timeRemaining={quizDeadline || Date.now()}
+        timeRemaining={quizDeadline ?? 0}
         onQuit={quitQuiz}
         onAnswer={handleAnswer}
         onNext={handleNext}
@@ -239,7 +268,7 @@ const TakeQuiz = () => {
           <Empty description="No quizzes available yet. Please check back later!" />
         </div>
       ) : (
-        <QuizListView quizzes={filteredQuizzes} onStartQuiz={startQuiz} />
+        <QuizListView quizzes={filteredQuizzes} completions={completions} onStartQuiz={startQuiz} />
       )}
     </div>
   );

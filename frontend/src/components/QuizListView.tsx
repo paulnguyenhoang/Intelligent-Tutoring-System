@@ -6,13 +6,14 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import type { Quiz } from "../types";
-import { getQuizCompletion } from "../services/quizService";
+import type { QuizCompletion } from "../services/quizService";
 import styles from "./QuizListView.module.less";
 
 const { Title, Paragraph, Text } = Typography;
 
 interface QuizListViewProps {
   quizzes: Quiz[];
+  completions: Record<string, QuizCompletion | null | undefined>;
   onStartQuiz: (quizId: string) => void;
 }
 
@@ -30,7 +31,7 @@ const getDifficultyText = (score?: number) => {
   return "Easy";
 };
 
-export default function QuizListView({ quizzes, onStartQuiz }: QuizListViewProps) {
+export default function QuizListView({ quizzes, completions, onStartQuiz }: QuizListViewProps) {
   return (
     <div className={styles.overviewSection}>
       <div className={styles.sectionHeader}>
@@ -42,7 +43,7 @@ export default function QuizListView({ quizzes, onStartQuiz }: QuizListViewProps
       <div className={styles.quizGrid}>
         <Row gutter={[24, 24]}>
           {quizzes.map((quiz) => {
-            const completion = getQuizCompletion(quiz.id);
+            const completion = completions[quiz.id];
             const isCompleted = !!completion;
             const isPassed = completion?.passed || false;
 
@@ -52,7 +53,7 @@ export default function QuizListView({ quizzes, onStartQuiz }: QuizListViewProps
                   text={
                     isCompleted ? (
                       <span>
-                        <CheckCircleOutlined /> {completion.percentage.toFixed(0)}%
+                        <CheckCircleOutlined /> {completion?.percentage.toFixed(0)}%
                       </span>
                     ) : (
                       "New"
@@ -100,8 +101,10 @@ export default function QuizListView({ quizzes, onStartQuiz }: QuizListViewProps
                       <div className={styles.completionInfo}>
                         {isCompleted ? (
                           <Text type="secondary" style={{ fontSize: 12 }}>
-                            Last attempt: {completion.score}/{completion.total} •{" "}
-                            {new Date(completion.completedAt).toLocaleDateString()}
+                            Last attempt: {completion?.score}/{completion?.total} •{" "}
+                            {completion?.completedAt
+                              ? new Date(completion.completedAt).toLocaleDateString()
+                              : "N/A"}
                           </Text>
                         ) : (
                           <div style={{ height: "20px" }}></div>
