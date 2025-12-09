@@ -277,10 +277,6 @@ The built files will be in the `dist` directory.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 👥 Authors
-
-- **mqthanggg** - _Initial work_
-
 ## 📄 License
 
 This project is licensed under the ISC License.
