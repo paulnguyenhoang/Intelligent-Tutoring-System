@@ -22,9 +22,7 @@ export class InstructorController{
         const data = (JSON.parse(req.body.data) as CourseWithNoFileDTO)
         let dto: CourseWithFilesDTO = {
             ...data,
-            thumbnail: new Blob([new Uint8Array(thumbnail?.buffer!)], {
-                type: thumbnail?.mimetype
-            })
+            thumbnail: thumbnail?.buffer as Buffer<ArrayBuffer>
             
         }
         await this.courseService.createCourse(
@@ -39,9 +37,7 @@ export class InstructorController{
         const data = JSON.parse(req.body.data) as LessonWithNoFileDTO
         let dto: LessonWithFilesDTO = {
             ...data,
-            content: new Blob([new Uint8Array(content?.buffer!)], {
-                type: content?.mimetype
-            })
+            content: typeof content !== 'string' ? content?.buffer as Buffer<ArrayBuffer> : content
         }
         await this.lessonService.createLesson(
             dto

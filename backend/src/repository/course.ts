@@ -17,7 +17,7 @@ export class CourseRepository implements ICourseRepository{
             createdDate: course.createdDate,
             tags: course.tags,
             category: course.category,
-            thumbnail: course.thumbnail === undefined ? null : Buffer.from(await course.thumbnail.arrayBuffer())
+            thumbnail: course.thumbnail
         }
         const courseResult = await db.oneOrNone(
             'SELECT 1 FROM course WHERE id = ${id}',
@@ -60,9 +60,7 @@ export class CourseRepository implements ICourseRepository{
             courseResult.tags,
             [],
             courseResult.category,
-            courseResult.thumbnail !== null ? new Blob([new Uint8Array(courseResult.thumbnail)], {
-                type: 'image/png'
-            }) : undefined,
+            courseResult.thumbnail,
             courseResult.id,
         )
     }
@@ -76,10 +74,6 @@ export class CourseRepository implements ICourseRepository{
             }
         )
         for (const val of coursesResult){
-            const bytes = new Uint8Array(val.thumbnail.length)
-            for (let i = 0; i < val.thumbnail.length; i++) {
-                bytes[i] = val.thumbnail[i];
-            }
             courses.push(
                 new Course(
                     val.title,
@@ -90,9 +84,7 @@ export class CourseRepository implements ICourseRepository{
                     val.tags,
                     [],
                     val.category,
-                    val.thumbnail !== null ? new Blob([bytes], {
-                        type: 'image/png'
-                    }) : undefined,
+                    val.thumbnail,
                     val.id,
                 )
             )
@@ -140,9 +132,7 @@ export class CourseRepository implements ICourseRepository{
                     val.tags,
                     [],
                     val.category,
-                    val.thumbnail !== null ? new Blob([bytes], {
-                        type: 'image/png'
-                    }) : undefined,
+                    val.thumbnail,
                     val.id,
                 )
             )

@@ -74,7 +74,7 @@ export class CourseService implements ICourseService{
                 description: val.description,
                 category: val.category,
                 instructorID: val.instructorID,
-                thumbnail: val.thumbnail as Blob
+                thumbnail: val.thumbnail!
             }
             courses.push(
                 course

@@ -12,7 +12,7 @@ export interface CourseWithFilesDTO{
     description: string,
     instructorID: string,
     category: string,
-    thumbnail: Blob
+    thumbnail: Buffer<ArrayBuffer>
 }
 
 export interface CourseContentMap{
