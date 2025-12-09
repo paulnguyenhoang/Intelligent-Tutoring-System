@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button, Card, List, message, Modal, Space, Tag, Typography } from "antd";
 import {
   PlusOutlined,
@@ -23,33 +23,57 @@ export default function TeacherQuizManagement() {
   const [openView, setOpenView] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
 
-  const loadQuizzes = () => {
-    setQuizzes(getQuizzes());
-  };
-
-  useEffect(() => {
-    loadQuizzes();
+  const loadQuizzes = useCallback(async () => {
+    try {
+      const data = await getQuizzes();
+      setQuizzes(data);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to load quizzes";
+      message.error(msg);
+    }
   }, []);
 
-  const handleCreate = (values: Omit<Quiz, "id">) => {
-    createQuiz(values);
-    message.success("Quiz created successfully!");
-    setOpenCreate(false);
-    loadQuizzes();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadQuizzes();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadQuizzes]);
+
+  const handleCreate = async (values: Omit<Quiz, "id">) => {
+    try {
+      await createQuiz(values);
+      message.success("Quiz created successfully!");
+      setOpenCreate(false);
+      loadQuizzes();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Create quiz failed";
+      message.error(msg);
+    }
   };
 
-  const handleEdit = (id: string, values: Omit<Quiz, "id">) => {
-    updateQuiz(id, values);
-    message.success("Quiz updated successfully!");
-    setOpenEdit(false);
-    setSelectedQuiz(null);
-    loadQuizzes();
+  const handleEdit = async (id: string, values: Omit<Quiz, "id">) => {
+    try {
+      await updateQuiz(id, values);
+      message.success("Quiz updated successfully!");
+      setOpenEdit(false);
+      setSelectedQuiz(null);
+      loadQuizzes();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Update quiz failed";
+      message.error(msg);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    deleteQuiz(id);
-    message.success("Quiz deleted!");
-    loadQuizzes();
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteQuiz(id);
+      message.success("Quiz deleted!");
+      loadQuizzes();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Delete quiz failed";
+      message.error(msg);
+    }
   };
 
   const confirmDelete = (quiz: Quiz) => {
