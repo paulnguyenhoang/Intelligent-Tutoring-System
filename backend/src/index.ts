@@ -18,6 +18,7 @@ import { JWTService } from "./service/jwt";
 import { allowRole } from "./extra/middleware/role";
 import { Role } from "./model/enum/role";
 import { QuizController } from "./controller/quiz";
+import { QuizFacadeService } from "./service/quiz_facade";
 
 const ex = express();
 
@@ -51,7 +52,7 @@ const studentController = new StudentController(
   new LessonService(new LessonRepository())
 );
 
-const quizController = new QuizController();
+const quizController = new QuizController(new QuizFacadeService());
 
 ex.post("/register", authController.RegisterController);
 
