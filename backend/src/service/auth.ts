@@ -75,11 +75,6 @@ export class AuthService implements IAuthService{
         )
         return obj
     }
-    public async resetPassword(
-        email: string
-    ){
-
-    }
     public async verifyToken(
         id: string,
         token: string
