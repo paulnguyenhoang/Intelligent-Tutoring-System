@@ -64,11 +64,12 @@ export class UserRepository implements IUserRepository {
   }
   public async findByUsername(username: string) {
     const userResult = await this.db.oneOrNone(
-      'SELECT id, username, "passwordHash", email, role, "isActive", "lastLogin" FROM "user" WHERE username = ${username}',
+      'SELECT id, username, "passwordHash", email, role, "isActive", "lastLogin", "verifyToken" FROM "user" WHERE username = ${username}',
       {
         username: username,
       }
     );
+    console.log(userResult);
     if (userResult === null) throw new Error("User doesn't exist.");
     if (userResult.role === Role.STUDENT) {
       const studentResult = await this.db.oneOrNone(
@@ -84,8 +85,8 @@ export class UserRepository implements IUserRepository {
         userResult.email,
         userResult.role as Role,
         userResult.isActive,
-        userResult.lastLogin,
         studentResult.studentID,
+        userResult.lastLogin,
         studentResult.learningStyle as LearningStyle,
         studentResult.enrollmentDate,
         studentResult.gpa,
@@ -105,8 +106,8 @@ export class UserRepository implements IUserRepository {
       userResult.email,
       userResult.role as Role,
       userResult.isActive,
-      userResult.lastLogin,
       instructorResult.employeeID,
+      userResult.lastLogin,
       instructorResult.department,
       instructorResult.expertise,
       userResult.verifyToken
@@ -148,6 +149,7 @@ export class UserRepository implements IUserRepository {
       if (value !== undefined) (userDetail as any)[key] = value;
       else (userDetail as any)[key] = null;
     }
+    console.log(userDetail, specificUserDetail);
     const result = await this.db.oneOrNone('SELECT 1 FROM "user" WHERE id = ${id}', {
       id: user.id,
     });

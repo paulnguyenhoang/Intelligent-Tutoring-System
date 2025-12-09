@@ -238,13 +238,6 @@ export default function TeacherQuizManagement() {
                     <Text type="secondary">{q.hint}</Text>
                   </div>
                 )}
-
-                {q.feedback && (
-                  <div style={{ marginTop: 8 }}>
-                    <Text strong>Feedback: </Text>
-                    <Text type="secondary">{q.feedback}</Text>
-                  </div>
-                )}
               </Card>
             ))}
           </Space>
