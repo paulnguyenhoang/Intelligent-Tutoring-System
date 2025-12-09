@@ -32,7 +32,7 @@ const TeacherDashboard = () => {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const instructorId = getInstructorId();
+      const instructorId = localStorage.getItem("its_user_id");
       if (!instructorId) {
         message.error("Please log in first");
         return;

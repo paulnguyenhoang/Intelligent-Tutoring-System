@@ -75,6 +75,7 @@ export class CourseRepository implements ICourseRepository{
                 instructorID: instructor
             }
         )
+        console.log(coursesResult)
         for (const val of coursesResult){
             courses.push(
                 new Course(
