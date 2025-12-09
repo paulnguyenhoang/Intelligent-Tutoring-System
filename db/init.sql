@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS public.quiz_attempt
     answers json NOT NULL,
     "totalScore" real,
     feedback character varying(255),
+    "completedAt" timestamp with time zone,
     CONSTRAINT attempt_pkey PRIMARY KEY ("attemptID")
 );
 
