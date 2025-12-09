@@ -295,4 +295,31 @@ ALTER TABLE IF EXISTS public.video_material
     ON DELETE CASCADE
     NOT VALID;
 
+-- Seed sample users
+INSERT INTO public."user" (id, username, "passwordHash", email, role, "isActive", "lastLogin", "verifyToken") VALUES
+('00000000-0000-0000-0000-0000000000a1', 'admin', '$2a$10$IowWAokTDLU76u5G.GHkJ.zeaku/Ey6/dBuuW2nZiunhS1dnmaww.', 'admin@example.com', 1, true, NULL, NULL),
+('00000000-0000-0000-0000-0000000000b1', 'student', '$2b$10$GcfH74xS/lHAsI0Wf41ffeadwjSE8a7kCGe.uuIvqV9nyRNPjthG2', 'student@example.com', 0, true, NULL, NULL);
+
+INSERT INTO public.instructor (id, "employeeID", department, expertise) VALUES
+('00000000-0000-0000-0000-0000000000a1', '9000000001', 'Computer Science', ARRAY['Teaching']::character varying[]);
+
+INSERT INTO public.student (id, "studentID", "learningStyle", "enrollmentDate", gpa) VALUES
+('00000000-0000-0000-0000-0000000000b1', '1000000001', NULL, CURRENT_DATE, NULL);
+
+-- Seed sample quizzes
+INSERT INTO public.quiz (id, title, "timeLimit", "minPassScore", "maxAttempts", status) VALUES
+('11111111-1111-1111-1111-111111111111', 'Calculus 1', 30, 70, 3, 1),
+('22222222-2222-2222-2222-222222222222', 'Algebra Basics', 25, 70, 3, 1),
+('33333333-3333-3333-3333-333333333333', 'Physics Intro', 20, 70, 3, 1);
+
+INSERT INTO public.question (id, quiz, title, difficulty, "correctOptionId", options, "isMultiSelect", tags, hint) VALUES
+('11111111-1111-1111-1111-111111111201', '11111111-1111-1111-1111-111111111111', 'Derivative of x^2?', 1, ARRAY[1], ARRAY['x', '2x', 'x^2', '2x^2'], false, NULL, 'Use power rule'),
+('11111111-1111-1111-1111-111111111202', '11111111-1111-1111-1111-111111111111', 'Integral of 2x dx?', 1, ARRAY[0], ARRAY['x^2 + C', 'x^2/2 + C', '2x^2 + C', '4x + C'], false, NULL, 'Reverse power rule'),
+
+('22222222-2222-2222-2222-222222222201', '22222222-2222-2222-2222-222222222222', 'Solve 2x + 3 = 7', 0, ARRAY[1], ARRAY['x = 1', 'x = 2', 'x = 3', 'x = 4'], false, NULL, NULL),
+('22222222-2222-2222-2222-222222222202', '22222222-2222-2222-2222-222222222222', 'Value of 3^2', 0, ARRAY[2], ARRAY['6', '8', '9', '12'], false, NULL, NULL),
+
+('33333333-3333-3333-3333-333333333301', '33333333-3333-3333-3333-333333333333', 'Speed if distance 100m in 10s?', 0, ARRAY[1], ARRAY['5 m/s', '10 m/s', '20 m/s', '50 m/s'], false, NULL, 'speed = distance/time'),
+('33333333-3333-3333-3333-333333333302', '33333333-3333-3333-3333-333333333333', 'Unit of force?', 0, ARRAY[0], ARRAY['Newton', 'Joule', 'Watt', 'Pascal'], false, NULL, NULL);
+
 END;
