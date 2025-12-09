@@ -1,6 +1,7 @@
 export type UserRole = "teacher" | "student";
 
 export type User = {
+  id?: string;
   username: string;
   role: UserRole;
   password?: string;
@@ -16,11 +17,12 @@ export type Course = {
   title: string;
   description?: string;
   content?: string;
-  thumbnail: string;
   category: string;
+  instructorID?: string;
+  thumbnail?: string | Blob; // Blob object or Blob URL or image URL
   instructor?: Instructor;
-  lessonsWatched?: number;
   totalLessons?: number;
+  lessonsWatched?: number;
 };
 
 export type Question = {

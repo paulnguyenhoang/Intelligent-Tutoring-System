@@ -21,7 +21,7 @@ const SignIn = () => {
       const backendRole = values.role === "teacher" ? "instructor" : "student";
 
       // Call backend API to authenticate
-      const isAuthenticated = await loginAPI({
+      const loginResponse = await loginAPI({
         username: values.username,
         password: values.password,
         role: backendRole,
@@ -30,7 +30,7 @@ const SignIn = () => {
       // Always stop loading immediately after getting response
       setLoading(false);
 
-      if (isAuthenticated) {
+      if (loginResponse) {
         // Show success modal
         Modal.success({
           title: "Login Successful!",
@@ -47,8 +47,12 @@ const SignIn = () => {
           centered: true,
           width: 460,
           onOk: () => {
-            // Login user in frontend
-            login({ username: values.username, role: values.role });
+            // Login user in frontend and save JWT + ID to localStorage
+            login(
+              { id: loginResponse.id, username: values.username, role: values.role },
+              loginResponse.token,
+              loginResponse.id
+            );
             // Navigate to appropriate dashboard
             window.location.href = getRedirectPath(values.role);
           },

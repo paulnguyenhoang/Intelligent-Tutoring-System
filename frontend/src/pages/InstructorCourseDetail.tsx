@@ -22,14 +22,14 @@ import {
   FileWordOutlined,  // Icon cho Word
   PlayCircleOutlined,
   PlusOutlined,
-  CloudUploadOutlined,
   InboxOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
 import type { RcFile } from "antd/es/upload/interface";
 
-import { getCourses } from "../services/courseService";
-import { Course } from "../types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getCourses, getLessons, createLesson, deleteLesson } from "../services/apiService";
+import type { Course } from "../types";
 
 const { Title, Text, Paragraph } = Typography;
 const { Dragger } = Upload;
@@ -67,13 +67,35 @@ export default function InstructorCourseDetail() {
 
   // State để hiển thị tên file đang upload trong Form (Dùng chung cho Video, PDF, Word)
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<RcFile | null>(null);
   
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const allCourses = getCourses();
-    const foundCourse = allCourses.find((c) => c.id === id);
-    setCourse(foundCourse);
+    const load = async () => {
+      try {
+        const allCourses = await getCourses();
+        const foundCourse = allCourses.find((c: any) => c.id === id);
+        setCourse(foundCourse);
+
+        if (foundCourse && id) {
+          const lessonsResult = await getLessons(id as string);
+          const mapped = lessonsResult.map((l: any) => ({
+            id: l.id,
+            title: l.title,
+            type: (l.materials?.type || l.type || "VIDEO") as any,
+            content: l.content || l.materials?.content || "",
+            duration: l.duration || l.materials?.duration || "",
+            fileName: l.fileName || undefined,
+          } as Lesson));
+          setLessons(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load course/lessons", err);
+      }
+    };
+
+    load();
   }, [id]);
 
   // --- XỬ LÝ KHI BẤM VÀO BÀI HỌC ---
@@ -90,17 +112,34 @@ export default function InstructorCourseDetail() {
   const handleAddLesson = async () => {
     try {
       const vals = await form.validateFields();
-      
-      // Nếu user chọn upload file, content đã được set bởi handleFileUpload
-      // Nếu user nhập link video, content lấy từ input
-      
-      const newLesson: Lesson = {
-        id: Date.now().toString(),
-        ...vals,
-        fileName: uploadedFileName || undefined, // Lưu tên file nếu có
+
+      const lessonPayload = {
+        course: id as string,
+        title: vals.title,
+        type: vals.type,
+        duration: vals.duration || 0,
       };
-      
-      setLessons([...lessons, newLesson]);
+
+      let contentFile: File | undefined;
+      if (uploadedFile) {
+        contentFile = uploadedFile as File;
+      } else if (vals.content) {
+        const blob = new Blob([vals.content], { type: "text/plain" });
+        contentFile = new File([blob], "content.txt", { type: "text/plain" });
+      }
+
+      await createLesson(lessonPayload as any, contentFile as any);
+      message.success("Lesson created");
+      const lessonsResult = await getLessons(id as string);
+      const mapped = lessonsResult.map((l: any) => ({
+        id: l.id,
+        title: l.title,
+        type: (l.materials?.type || l.type || "VIDEO") as any,
+        content: l.content || l.materials?.content || "",
+        duration: l.duration || l.materials?.duration || "",
+        fileName: l.fileName || undefined,
+      } as Lesson));
+      setLessons(mapped);
       handleCloseModal();
     } catch (error) {
       console.log("Validate Failed:", error);
@@ -145,15 +184,25 @@ export default function InstructorCourseDetail() {
 
       form.setFieldValue("content", previewUrl);
       setUploadedFileName(file.name);
+      setUploadedFile(file);
       message.success(`${type} selected successfully!`);
-    } catch (error) {
+    } catch {
       message.error("Failed to select file");
     }
     return false; // Chặn upload mặc định
   };
 
   const handleDeleteLesson = (lessonId: string) => {
-    setLessons(lessons.filter((l) => l.id !== lessonId));
+    (async () => {
+      try {
+        await deleteLesson(lessonId);
+        setLessons(lessons.filter((l) => l.id !== lessonId));
+        message.success("Lesson deleted");
+      } catch (err) {
+        console.error("Failed to delete lesson", err);
+        message.error("Failed to delete lesson");
+      }
+    })();
   };
 
   // Render Icon theo loại
@@ -320,7 +369,7 @@ export default function InstructorCourseDetail() {
             />
           </Form.Item>
 
-          <Form.Item noWrapperCol={{ span: 24 }} shouldUpdate>
+          <Form.Item shouldUpdate>
             {({ getFieldValue }) => {
                 const type = getFieldValue("type");
                 

@@ -1,6 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Avatar, Button, Card, Empty, List, Tag, Typography } from "antd";
+import { getCourses, getLessons } from "../services/apiService";
 import { PlayCircleOutlined, FileTextOutlined } from "@ant-design/icons";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const { Title, Paragraph, Text } = Typography;
 
 type MaterialType = "VIDEO" | "TEXT";
@@ -26,68 +29,46 @@ interface CourseMock {
   materials: Material[];
 }
 
-// Mock data (example content repository)
-const mockCourses: CourseMock[] = [
-  {
-    id: "1",
-    title: "React Fundamentals - Build Modern Web Apps",
-    description:
-      "Learn React from scratch with practical projects and a clear content repository of materials.",
-    instructor: { name: "Sarah Johnson", avatar: "https://i.pravatar.cc/150?img=1" },
-    materials: [
-      {
-        id: "m1",
-        title: "Introduction to React (Video)",
-        type: "VIDEO",
-        uploadedDate: "2023-10-01",
-        url: "https://example.com/materials/react-intro",
-      },
-      {
-        id: "m2",
-        title: "JSX & Components (Text)",
-        type: "TEXT",
-        uploadedDate: "2023-10-05",
-        url: "https://example.com/materials/jsx-components",
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "TypeScript Advanced Patterns",
-    description: "A curated set of materials exploring advanced typing patterns.",
-    instructor: { name: "Michael Chen", avatar: "https://i.pravatar.cc/150?img=2" },
-    materials: [
-      {
-        id: "m4",
-        title: "Generics Deep Dive (Video)",
-        type: "VIDEO",
-        uploadedDate: "2023-09-20",
-        url: "https://example.com/materials/ts-generics",
-      },
-      {
-        id: "m5",
-        title: "Utility Types Reference (Text)",
-        type: "TEXT",
-        uploadedDate: "2023-09-22",
-        url: "https://example.com/materials/utility-types",
-      },
-    ],
-  },
-  {
-    id: "3",
-    title: "Tailwind CSS Mastery",
-    description: "Hands-on materials for building beautiful interfaces with Tailwind.",
-    instructor: { name: "Emma Wilson", avatar: "https://i.pravatar.cc/150?img=3" },
-    materials: [],
-  },
-];
+// We'll fetch course metadata and lessons from backend
 
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Simulate finding the course from mock data
-  const course = mockCourses.find((c) => c.id === id);
+  const [course, setCourse] = useState<CourseMock | null>(null);
+  const [materials, setMaterials] = useState<Material[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const courses = await getCourses();
+        const found = courses.find((c: any) => c.id === id);
+        if (found) {
+          setCourse({
+            id: found.id,
+            title: found.title,
+            description: found.description,
+            instructor: { name: typeof found.instructor === "string" ? found.instructor : "Instructor", avatar: undefined },
+            materials: [],
+          });
+
+          const lessons = await getLessons(id as string);
+          const mapped: Material[] = lessons.map((l: any) => ({
+            id: l.id,
+            title: l.title,
+            type: l.materials?.type === "VIDEO" || l.type === "VIDEO" ? "VIDEO" : "TEXT",
+            uploadedDate: l.createdDate || l.uploadedDate || "",
+            url: l.materials?.content || l.content || "",
+          }));
+          setMaterials(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load course details", err);
+      }
+    };
+
+    load();
+  }, [id]);
 
   if (!course) {
     return (
@@ -146,12 +127,12 @@ export default function CourseDetail() {
           Materials
         </Title>
 
-        {course.materials.length === 0 ? (
+        {materials.length === 0 ? (
           <Empty description={<span>No materials uploaded yet.</span>} />
         ) : (
           <List
             itemLayout="horizontal"
-            dataSource={course.materials}
+            dataSource={materials}
             renderItem={(item: Material) => (
               <List.Item
                 actions={[
