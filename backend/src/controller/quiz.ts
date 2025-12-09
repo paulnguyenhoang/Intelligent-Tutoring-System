@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { constants } from "http2";
-import { FrontendQuiz, QuizFacadeService } from "../service/quiz_facade";
+import { FrontendQuiz, QuizService } from "../service/quiz";
+import { IQuizReadService, IQuizWriteService } from "../interface/service/quiz";
 
 export class QuizController {
-  public constructor(private quizService: QuizFacadeService) {}
+  public constructor(private quizService: IQuizReadService & IQuizWriteService) {}
 
   public list = async (_req: Request, res: Response) => {
     const quizzes = await this.quizService.list();

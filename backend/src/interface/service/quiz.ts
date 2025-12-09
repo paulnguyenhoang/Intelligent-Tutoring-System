@@ -1,22 +1,36 @@
-import { QuizDTO } from "../../dto/quiz";
-import { QuizResultDTO } from "../../dto/quiz_result";
-import { QuizStatsDTO } from "../../dto/quiz_stats";
-import { Quiz } from "../../model/entity/quiz";
-import { QuizAttempt } from "../../model/entity/quiz_attempt";
-import { IQuestionRepository } from "../repository/question";
-import { IQuizRepository } from "../repository/quiz";
-import { IQuizAttemptRepository } from "../repository/quiz_attempt";
+import { FrontendQuiz } from "../../service/quiz";
 
-export interface IQuizService{
-    quizRepository: IQuizRepository
-    quizAttemptRepository: IQuizAttemptRepository
-    questionRepository: IQuestionRepository
-    getQuizzes: (instructorID?: string) => Promise<Quiz[]>
-    createQuiz: (quiz: QuizDTO) => Promise<Quiz>
-    updateQuiz: (quiz: QuizDTO) => Promise<Quiz>
-    submitQuiz: (attempt: QuizAttempt) => Promise<void>
-    calculateScore: (attempt: QuizAttempt) => Promise<number>
-    getQuizResult: (attemptID: string) => Promise<QuizResultDTO>
-    analyzeStatistics: (quizID: string) => Promise<QuizStatsDTO>
-    deleteQuiz: (id: string) => Promise<void>
+export interface IQuizReadService {
+  list: () => Promise<FrontendQuiz[]>;
+  getOne: (id: string) => Promise<FrontendQuiz | null>;
+  completion: (
+    quizID: string,
+    username: string
+  ) => Promise<{
+    quizId: string;
+    score: number;
+    total: number;
+    percentage: number;
+    passed: boolean;
+    completedAt: string | null;
+  } | null>;
+}
+
+export interface IQuizWriteService {
+  create: (quiz: FrontendQuiz) => Promise<FrontendQuiz>;
+  update: (id: string, quiz: FrontendQuiz) => Promise<FrontendQuiz | null>;
+  remove: (id: string) => Promise<void>;
+  submit: (
+    id: string,
+    username: string,
+    answers: Record<string, string>
+  ) => Promise<{
+    correct: number;
+    total: number;
+    percentage: number;
+    passed: boolean;
+    feedback: string;
+    attemptId: string;
+    completedAt: string;
+  } | null>;
 }
