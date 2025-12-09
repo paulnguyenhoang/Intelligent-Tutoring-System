@@ -1,8 +1,8 @@
-import { UserDTO } from "../../dto/user"
-import { User } from "../abstract/user"
+import { UserDTO } from "../../dto/user";
+import { User } from "../abstract/user";
 
-export interface IAuthService{
-    authenticate: (username: string, password: string, role: string) => Promise<User | null>
-    register: (user: UserDTO) => Promise<User>
-    verifyToken: (id: string, token: string) => Promise<boolean>
+export interface IAuthService {
+  authenticate: (username: string, password: string, role: string) => Promise<User | null>;
+  register: (user: UserDTO) => Promise<User>;
+  verifyToken: (id: string, token: string) => Promise<{ success: boolean; message: string }>;
 }

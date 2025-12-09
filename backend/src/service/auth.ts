@@ -60,18 +60,43 @@ export class AuthService implements IAuthService {
     return obj;
   }
   public async resetPassword(email: string) {}
-  public async verifyToken(id: string, token: string) {
+  public async verifyToken(
+    id: string,
+    token: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
       let result = await this.userRepository.findByID(id);
+
+      // Check if user is already verified
+      if (result.isActive && !result.verifyToken) {
+        return {
+          success: true,
+          message: "Email has already been verified. You can now log in.",
+        };
+      }
+
+      // Check if token matches
       if (result.verifyToken === token) {
         result.isActive = true;
         result.verifyToken = undefined;
         await this.userRepository.save(result);
-        return true;
+        return {
+          success: true,
+          message: "Email verified successfully!",
+        };
       }
-      return false;
+
+      // Token doesn't match or is invalid
+      return {
+        success: false,
+        message: "Verification failed. The link may be expired or invalid.",
+      };
     } catch (error) {
-      return false;
+      console.error("Verification error:", error);
+      return {
+        success: false,
+        message: "User not found or verification failed.",
+      };
     }
   }
 }

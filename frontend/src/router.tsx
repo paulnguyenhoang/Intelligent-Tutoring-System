@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import VerifyEmail from "./pages/VerifyEmail";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import TeacherQuizManagement from "./pages/TeacherQuizManagement";
 import StudentCourses from "./pages/StudentCourses";
@@ -16,6 +17,9 @@ export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Verify email route - outside of App wrapper */}
+        <Route path="/verify" element={<VerifyEmail />} />
+
         <Route path={ROUTES.HOME} element={<App />}>
           <Route index element={<Navigate to={ROUTES.SIGN_IN} replace />} />
           <Route path="signin" element={<SignIn />} />
@@ -52,14 +56,14 @@ export default function Router() {
               </ProtectedRoute>
             }
           />
-          <Route 
-        path="/teacher/courses/:id" 
-        element={
-          <ProtectedRoute allowedRole="teacher">
-            <InstructorCourseDetail />
-          </ProtectedRoute>
-        } 
-      />
+          <Route
+            path="/teacher/courses/:id"
+            element={
+              <ProtectedRoute allowedRole="teacher">
+                <InstructorCourseDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="quiz"
             element={

@@ -46,11 +46,35 @@ export class AuthController {
 
   public VerifyUserController = async (req: Request<{}, {}, {}, UserVerifyDTO>, res: Response) => {
     if (req.query.id === undefined || req.query.token === undefined) {
-      res.status(constants.HTTP_STATUS_BAD_REQUEST).json({ error: "invalid_link" });
+      // Redirect to frontend with error
+      res.redirect(
+        `http://localhost:5173/verify?id=${req.query.id || ""}&token=${req.query.token || ""}`
+      );
       return;
     }
+    // Redirect to frontend with params
+    res.redirect(`http://localhost:5173/verify?id=${req.query.id}&token=${req.query.token}`);
+  };
+
+  public VerifyUserAPIController = async (
+    req: Request<{}, {}, {}, UserVerifyDTO>,
+    res: Response
+  ) => {
+    if (req.query.id === undefined || req.query.token === undefined) {
+      res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+        status: false,
+        message: "Invalid verification link",
+      });
+      return;
+    }
+
+    console.log("Verifying email for ID:", req.query.id);
+    const result = await this.authService.verifyToken(req.query.id, req.query.token);
+    console.log("Verification result:", result);
+
     return res.status(constants.HTTP_STATUS_OK).json({
-      status: await this.authService.verifyToken(req.query.id, req.query.token),
+      status: result.success,
+      message: result.message,
     });
   };
 }
