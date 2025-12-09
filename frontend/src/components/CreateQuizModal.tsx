@@ -26,7 +26,6 @@ interface FormValues {
     optionD: string;
     correctAnswer: "A" | "B" | "C" | "D";
     hint?: string;
-    feedback?: string;
   }>;
 }
 
@@ -43,8 +42,8 @@ export default function CreateQuizModal({ open, onCancel, onSubmit }: CreateQuiz
         description: values.description,
         timeLimit: values.timeLimit,
         passingScore: values.passingScore,
-        questions: values.questions.map((q, idx) => ({
-          id: `q${idx + 1}`,
+        questions: values.questions.map((q) => ({
+          // Don't send id, let backend generate UUID
           content: q.content,
           options: {
             A: q.optionA,
@@ -54,7 +53,6 @@ export default function CreateQuizModal({ open, onCancel, onSubmit }: CreateQuiz
           },
           correctAnswer: q.correctAnswer,
           hint: q.hint,
-          feedback: q.feedback,
         })),
       };
 

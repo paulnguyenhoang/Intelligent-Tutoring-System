@@ -1,6 +1,11 @@
-import { Button, Form, Input, Select, message } from "antd";
+import { Button, Form, Input, Select, Modal } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOutlined } from "@ant-design/icons";
+import {
+  BookOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
 import { STORAGE_KEYS, ROUTES } from "../constants";
 import type { UserRole, User } from "../types";
 import { parseJSON } from "../utils";
@@ -19,9 +24,8 @@ const SignUp = () => {
     password: string;
     role: UserRole;
   }) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       // Call backend API to register
       await register({
         username: values.username,
@@ -30,24 +34,64 @@ const SignUp = () => {
         role: values.role,
       });
 
-      // Show success message
-      message.success(
-        "Registration successful! Please check your email to verify your account. Redirecting to sign in..."
-      );
-
       // Store user locally for demo purposes
       const users = parseJSON<User[]>(localStorage.getItem(STORAGE_KEYS.USERS), []);
       users.push({ username: values.username, password: values.password, role: values.role });
       localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 
-      // Redirect to sign in page after successful registration
-      setTimeout(() => {
-        navigate(ROUTES.SIGN_IN);
-      }, 1500);
+      // Show success modal
+      Modal.success({
+        title: "Registration Successful!",
+        icon: <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+        content: (
+          <div style={{ fontSize: "16px", padding: "10px 0" }}>
+            <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+              <MailOutlined style={{ marginRight: "8px" }} />A verification email has been sent to{" "}
+              <strong>{values.email}</strong>
+            </p>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "12px" }}>
+              Please check your email to verify your account.
+            </p>
+            <p style={{ fontSize: "14px", color: "#999", marginTop: 16 }}>
+              You will be redirected to the sign in page...
+            </p>
+          </div>
+        ),
+        okText: "Go to Sign In",
+        centered: true,
+        width: 480,
+        onOk: () => {
+          navigate(ROUTES.SIGN_IN);
+        },
+        afterClose: () => {
+          // Auto redirect after 2 seconds if user doesn't click OK
+          setTimeout(() => {
+            navigate(ROUTES.SIGN_IN);
+          }, 2000);
+        },
+      });
     } catch (error) {
-      message.error(
-        error instanceof Error ? error.message : "Registration failed. Please try again."
-      );
+      // Show error modal
+      Modal.error({
+        title: "Registration Failed",
+        icon: <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+        content: (
+          <div style={{ fontSize: "16px", padding: "10px 0" }}>
+            <p style={{ fontSize: "16px", marginBottom: "12px" }}>
+              <strong>Unable to create your account</strong>
+            </p>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "12px" }}>
+              {error instanceof Error ? error.message : "Please try again later."}
+            </p>
+            <p style={{ marginTop: 12, fontSize: "12px", color: "#999" }}>
+              If the problem persists, please contact support.
+            </p>
+          </div>
+        ),
+        okText: "Close",
+        centered: true,
+        width: 460,
+      });
     } finally {
       setLoading(false);
     }
