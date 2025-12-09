@@ -87,14 +87,14 @@ export class QuizService implements IQuizReadService, IQuizWriteService {
       id: quiz.id,
       title: quiz.title,
       description: "",
-      timeLimit: quiz.timeLimit,
-      passingScore: quiz.passingScore,
+      timeLimit: quiz.timeLimit ?? undefined,
+      passingScore: quiz.passingScore ?? undefined,
       questions: questions.map((q) => ({
         id: q.id,
         content: q.title,
         options: optionsArrayToObject(q.options),
         correctAnswer: indexToLetter(q.correctOptionId),
-        hint: q.hint,
+        hint: q.hint ?? undefined,
         feedback: "",
       })),
     };
