@@ -30,7 +30,12 @@ export async function register(payload: RegisterPayload): Promise<void> {
   return response.json();
 }
 
-export async function login(payload: LoginPayload): Promise<boolean> {
+export interface LoginResponse {
+  token: string;
+  id: string;
+}
+
+export async function login(payload: LoginPayload): Promise<LoginResponse | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
@@ -41,12 +46,12 @@ export async function login(payload: LoginPayload): Promise<boolean> {
     });
 
     if (response.ok) {
-      // Login successful, backend returns { token: string }
-      await response.json();
-      return true;
+      // Login successful, backend returns { token: string, id: string }
+      const data = await response.json();
+      return data;
     } else {
       // Login failed (401 or other error)
-      return false;
+      return null;
     }
   } catch (error) {
     // Network error or other exception

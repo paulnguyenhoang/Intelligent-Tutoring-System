@@ -1,6 +1,7 @@
 export type UserRole = "teacher" | "student";
 
 export type User = {
+  id?: string;
   username: string;
   role: UserRole;
   password?: string;

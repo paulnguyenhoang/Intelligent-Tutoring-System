@@ -13,13 +13,21 @@ export function useAuth() {
     }
   }, []);
 
-  const login = (userData: User) => {
+  const login = (userData: User, token?: string, userId?: string) => {
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem(STORAGE_KEYS.JWT, token);
+    }
+    if (userId) {
+      localStorage.setItem(STORAGE_KEYS.USER_ID, userId);
+    }
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.JWT);
+    localStorage.removeItem(STORAGE_KEYS.USER_ID);
     setUser(null);
     window.location.href = ROUTES.SIGN_IN;
   };
