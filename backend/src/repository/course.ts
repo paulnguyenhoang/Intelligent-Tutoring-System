@@ -77,6 +77,10 @@ export class CourseRepository implements ICourseRepository{
         )
         console.log(coursesResult)
         for (const val of coursesResult){
+            const bytes = new Uint8Array(val.thumbnail.length)
+            for (let i = 0; i < val.thumbnail.length; i++) {
+                bytes[i] = val.thumbnail[i];
+            }
             courses.push(
                 new Course(
                     val.title,
@@ -87,7 +91,7 @@ export class CourseRepository implements ICourseRepository{
                     val.tags,
                     [],
                     val.category,
-                    val.thumbnail !== null ? new Blob([new Uint8Array(val.thumbnail)], {
+                    val.thumbnail !== null ? new Blob([bytes], {
                         type: 'image/png'
                     }) : undefined,
                     val.id,
@@ -123,6 +127,10 @@ export class CourseRepository implements ICourseRepository{
             'SELECT * FROM course'
         )
         for (const val of coursesResult){
+            const bytes = new Uint8Array(val.thumbnail.length)
+            for (let i = 0; i < val.thumbnail.length; i++) {
+                bytes[i] = val.thumbnail[i];
+            }
             courses.push(
                 new Course(
                     val.title,
@@ -133,7 +141,7 @@ export class CourseRepository implements ICourseRepository{
                     val.tags,
                     [],
                     val.category,
-                    val.thumbnail !== null ? new Blob([new Uint8Array(val.thumbnail)], {
+                    val.thumbnail !== null ? new Blob([bytes], {
                         type: 'image/png'
                     }) : undefined,
                     val.id,
