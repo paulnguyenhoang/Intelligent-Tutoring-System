@@ -3,7 +3,7 @@ export interface LessonWithFilesDTO{
     title: string,
     type: string,
     duration: string,
-    content: Blob | string
+    content: Buffer<ArrayBuffer> | string
 }
 export interface LessonWithNoFileDTO{
     course: string,

@@ -13,7 +13,7 @@ export class Course{
     public tags: string[]
     public lessons: Lesson[]
     public category: string
-    public thumbnail?: Blob
+    public thumbnail?: Buffer<ArrayBuffer>
     public constructor(
         title: string,
         description: string,
@@ -23,7 +23,7 @@ export class Course{
         tags: string[],
         lessons: Lesson[],
         category: string,
-        thumbnail?: Blob,
+        thumbnail?: Buffer<ArrayBuffer>,
         id?: string
     ){
         this.id = id ? id : uuid.v4()

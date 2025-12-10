@@ -27,7 +27,7 @@ export class LessonService implements ILessonService{
                     lesson.duration
                 ) : new TextMaterial(
                     MaterialType.TEXT,
-                    lesson.content as Blob,
+                    lesson.content as Buffer<ArrayBuffer>,
                     stringToFormat(lesson.type),
                     lesson.duration
                 ),

@@ -88,12 +88,16 @@ export class LessonRepository implements ILessonRepository{
         )
         let lessons: LessonWithFilesDTO[] = []
         for (const val of lessonAndMaterialResult){
+            const bytes = new Uint8Array(val.content.length)
+            for (let i = 0; i < val.content.length; i++) {
+                bytes[i] = val.content[i];
+            }
             let lesson: LessonWithFilesDTO = {
                 course: courseID,
                 title: val.title,
                 type: val.type === 0 ? 'VIDEO' : formatToString(val.format),
                 duration: val.duration,
-                content: val.url ? val.url : new Blob([new Uint8Array(val.content)],{
+                content: val.url ? val.url : new Blob([bytes],{
                     type: formatToMIMEType(val.format)
                 }) 
             } 
