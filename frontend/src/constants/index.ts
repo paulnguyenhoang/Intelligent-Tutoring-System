@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   USER_ID: "its_user_id",
   USERS: "its_users",
   COURSES: "its_courses",
+  LESSONS: "its_lessons",
   QUIZZES: "its_quizzes",
   QUIZ_COMPLETIONS: "its_quiz_completions",
 } as const;

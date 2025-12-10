@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import type { UserRole } from "../types";
+import type { UserRole, User } from "../types";
 import { STORAGE_KEYS, ROUTES } from "../constants";
 import { parseJSON } from "../utils";
 
@@ -15,10 +15,15 @@ export default function ProtectedRoute({ children, allowedRole }: Props) {
     return <Navigate to={ROUTES.SIGN_IN} replace />;
   }
 
-  const user = parseJSON(userStr, null);
+  const user = parseJSON<User | null>(userStr, null);
 
-  if (!user || user.role !== allowedRole) {
-    const redirectTo = user?.role === "teacher" ? ROUTES.TEACHER : ROUTES.QUIZ;
+  if (!user) {
+    return <Navigate to={ROUTES.SIGN_IN} replace />;
+  }
+
+  if (user.role !== allowedRole) {
+    // Redirect to correct dashboard based on actual user role
+    const redirectTo = user.role === "teacher" ? ROUTES.TEACHER : ROUTES.COURSES;
     return <Navigate to={redirectTo} replace />;
   }
 

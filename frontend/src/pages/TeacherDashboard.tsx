@@ -1,15 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
-import { Layout, Typography, theme, message } from "antd";
+import { useEffect, useState } from "react";
+import { Layout, Typography, theme } from "antd"; // Import theme để lấy màu chuẩn
+import { useNavigate } from "react-router-dom";
 import CreateCourseForm from "../components/CreateCourseForm";
 import EditCourseModal from "../components/EditCourseModal";
 import CoursesList from "../components/CoursesList";
-import { getInstructorCourses, deleteCourse as apiDeleteCourse } from "../services/apiService";
+import { getCourses, createCourse, deleteCourse, updateCourse } from "../services/courseService";
 import type { Course } from "../types";
 import styles from "./TeacherDashboard.module.less";
 
 const { Header, Content } = Layout;
 
 const TeacherDashboard = () => {
+  const navigate = useNavigate();
+  // Lấy token màu sắc từ Antd để background đồng bộ
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -19,55 +22,18 @@ const TeacherDashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
-  const getInstructorId = useCallback((): string => {
-    const userStr = localStorage.getItem("its_user");
-    if (!userStr) return "";
-    try {
-      const user = JSON.parse(userStr);
-      return user.username || "";
-    } catch {
-      return "";
-    }
+  useEffect(() => {
+    setCourses(getCourses());
   }, []);
 
-  const fetchCourses = useCallback(async () => {
-    try {
-      const instructorId = getInstructorId();
-      if (!instructorId) {
-        message.error("Please log in first");
-        return;
-      }
-      const fetchedCourses = await getInstructorCourses(instructorId);
-      setCourses(fetchedCourses);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      message.error("Failed to load courses");
-    }
-  }, [getInstructorId]);
+  const handleCreate = (payload: Omit<Course, "id">) => {
+    createCourse(payload);
+    setCourses(getCourses());
+  };
 
-  useEffect(() => {
-    const loadCourses = async () => {
-      await fetchCourses();
-    };
-    loadCourses();
-  }, [fetchCourses]);
-
-  const handleCreate = useCallback(async () => {
-    // CreateCourseForm now handles the API call directly
-    // This function will be called via onSuccess callback to refresh the list
-    await fetchCourses();
-    setOpenCreate(false);
-  }, [fetchCourses]);
-
-  const handleDelete = async (id: string) => {
-    try {
-      await apiDeleteCourse(id);
-      message.success("Course deleted successfully");
-      await fetchCourses();
-    } catch (error) {
-      console.error("Error deleting course:", error);
-      message.error("Failed to delete course");
-    }
+  const handleDelete = (id: string) => {
+    deleteCourse(id);
+    setCourses(getCourses());
   };
 
   const handleEdit = (c: Course) => {
@@ -75,12 +41,14 @@ const TeacherDashboard = () => {
     setOpenEdit(true);
   };
 
-  const handleUpdate = () => {
-    message.info("Update feature coming soon");
+  const handleUpdate = (id: string, data: Partial<Course>) => {
+    updateCourse(id, data);
+    setCourses(getCourses());
   };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      {/* 1. Header đổi sang màu trắng, xóa nút Create */}
       <Header
         style={{
           padding: "0 24px",
@@ -94,26 +62,25 @@ const TeacherDashboard = () => {
       </Header>
 
       <Content style={{ margin: "24px 24px 0" }}>
-        <div className={styles.container}>
-          <CreateCourseForm
-            open={openCreate}
-            onClose={() => setOpenCreate(false)}
-            onSuccess={handleCreate}
-          />
-          <EditCourseModal
-            open={openEdit}
-            course={selectedCourse}
-            onClose={() => setOpenEdit(false)}
-            onUpdate={handleUpdate}
-          />
+        <CreateCourseForm
+          open={openCreate}
+          onClose={() => setOpenCreate(false)}
+          onCreate={handleCreate}
+        />
+        <EditCourseModal
+          open={openEdit}
+          course={selectedCourse}
+          onClose={() => setOpenEdit(false)}
+          onUpdate={handleUpdate}
+        />
 
-          <CoursesList
-            courses={courses}
-            onCreate={() => setOpenCreate(true)}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </div>
+        {/* 2. Truyền hàm mở form xuống CoursesList */}
+        <CoursesList
+          courses={courses}
+          onCreate={() => setOpenCreate(true)} // <-- Truyền xuống đây
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </Content>
     </Layout>
   );

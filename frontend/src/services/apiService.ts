@@ -1,6 +1,5 @@
-import type { Course, User } from "../types";
+import type { Course } from "../types";
 import { STORAGE_KEYS } from "../constants";
-import { parseJSON } from "../utils";
 
 const API_BASE_URL = "http://localhost:3001";
 
@@ -8,10 +7,30 @@ const API_BASE_URL = "http://localhost:3001";
  * Get the current user ID from localStorage
  */
 function getUserId(): string | null {
-  const userStr = localStorage.getItem(STORAGE_KEYS.USER);
-  if (!userStr) return null;
-  const user = parseJSON<User>(userStr, null as unknown as User);
-  return user?.username || null;
+  return localStorage.getItem(STORAGE_KEYS.USER_ID);
+}
+
+/**
+ * Get JWT token from localStorage
+ */
+function getAuthToken(): string | null {
+  return localStorage.getItem(STORAGE_KEYS.JWT);
+}
+
+/**
+ * Get authorization headers with JWT token
+ */
+function getAuthHeaders(): HeadersInit {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    Accept: "*/*",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
 }
 
 /**
@@ -20,7 +39,7 @@ function getUserId(): string | null {
  */
 async function parseCoursesFormData(formData: FormData): Promise<Course[]> {
   const coursesJson = formData.get("courses");
-  
+
   if (!coursesJson || typeof coursesJson !== "string") {
     return [];
   }
@@ -63,9 +82,7 @@ export async function getCourses(): Promise<Course[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/student/courses`, {
       method: "GET",
-      headers: {
-        Accept: "*/*",
-      },
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -84,24 +101,15 @@ export async function getCourses(): Promise<Course[]> {
  * Get courses for a specific instructor
  * GET /instructor/courses/:instructorId
  */
-export async function getInstructorCourses(
-  instructorId: string
-): Promise<Course[]> {
+export async function getInstructorCourses(instructorId: string): Promise<Course[]> {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/instructor/courses/${instructorId}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "*/*",
-        },
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/instructor/courses/${instructorId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to fetch instructor courses: ${response.statusText}`
-      );
+      throw new Error(`Failed to fetch instructor courses: ${response.statusText}`);
     }
 
     const formData = await response.formData();
@@ -122,8 +130,16 @@ export async function createCourse(
   thumbnailFile?: File
 ): Promise<void> {
   const userId = getUserId();
+  const token = getAuthToken();
+
+  console.log("Creating course with:", { userId, hasToken: !!token });
+
   if (!userId) {
-    throw new Error("User not authenticated");
+    throw new Error("User ID not found. Please log in again.");
+  }
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please log in again.");
   }
 
   const coursePayload = {
@@ -135,7 +151,7 @@ export async function createCourse(
 
   const formData = new FormData();
   formData.append("data", JSON.stringify(coursePayload));
-  
+
   if (thumbnailFile) {
     formData.append("thumbnail", thumbnailFile);
   } else {
@@ -143,14 +159,20 @@ export async function createCourse(
     formData.append("thumbnail", new Blob([""], { type: "image/png" }));
   }
 
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${token}`,
+  };
+
   try {
     const response = await fetch(`${API_BASE_URL}/instructor/course`, {
       method: "POST",
+      headers,
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create course: ${response.statusText}`);
+      const errorText = await response.text().catch(() => response.statusText);
+      throw new Error(`Failed to create course (${response.status}): ${errorText}`);
     }
 
     // Backend responds with 'ok'
@@ -166,13 +188,17 @@ export async function createCourse(
  * DELETE /instructor/course?id=courseId
  */
 export async function deleteCourse(courseId: string): Promise<void> {
+  const token = getAuthToken();
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/instructor/course?id=${courseId}`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/instructor/course?id=${courseId}`, {
+      method: "DELETE",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to delete course: ${response.statusText}`);
@@ -209,22 +235,20 @@ export interface Lesson {
  * Backend returns JSON array of lessons
  */
 export async function getLessons(courseId: string): Promise<Lesson[]> {
+  const headers = getAuthHeaders();
+  headers["Content-Type"] = "application/json";
+
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/student/lessons/${courseId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/student/lessons/${courseId}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch lessons: ${response.statusText}`);
     }
 
-    const lessons = await response.json() as Lesson[];
+    const lessons = (await response.json()) as Lesson[];
     return Array.isArray(lessons) ? lessons : [];
   } catch (error) {
     console.error("Error fetching lessons:", error);
@@ -255,7 +279,7 @@ export async function createLesson(
 
   const formData = new FormData();
   formData.append("data", JSON.stringify(lessonPayload));
-  
+
   if (contentFile) {
     formData.append("content", contentFile);
   } else {
@@ -263,9 +287,16 @@ export async function createLesson(
     formData.append("content", new Blob([""], { type: "text/plain" }));
   }
 
+  const token = getAuthToken();
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/instructor/lesson`, {
       method: "POST",
+      headers,
       body: formData,
     });
 
@@ -286,13 +317,17 @@ export async function createLesson(
  * DELETE /instructor/lesson?id=lessonId
  */
 export async function deleteLesson(lessonId: string): Promise<void> {
+  const token = getAuthToken();
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/instructor/lesson?id=${lessonId}`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/instructor/lesson?id=${lessonId}`, {
+      method: "DELETE",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to delete lesson: ${response.statusText}`);

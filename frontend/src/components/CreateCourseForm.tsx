@@ -1,37 +1,34 @@
 import { useState } from "react";
 import { Modal, Form, Input, Select, Upload, message } from "antd";
 import { InboxOutlined, CloudUploadOutlined } from "@ant-design/icons";
+import type { Course } from "../types";
 import type { RcFile } from "antd/es/upload/interface";
-import { createCourse } from "../services/apiService";
 
 const { Dragger } = Upload;
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onCreate: (payload: Omit<Course, "id">) => void;
 };
 
-const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
+const CreateCourseForm = ({ open, onClose, onCreate }: Props) => {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<RcFile | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleUpload = async (file: RcFile) => {
+  const handleUpload = (file: RcFile) => {
     try {
-      // 1. Store the actual File object for upload
-      setUploadedFile(file);
-      
-      // 2. Create a preview URL from the file
-      const previewUrl = URL.createObjectURL(file);
-      setPreviewImage(previewUrl);
-      
-      // 3. Store file object in form (as placeholder, actual file will be sent separately)
-      form.setFieldValue("thumbnail", file.name);
-      
+      // 1. Tạo URL ảo (Blob URL)
+      const objectUrl = URL.createObjectURL(file);
+
+      // 2. Gán URL này vào form field 'thumbnail' (đang bị ẩn)
+      form.setFieldValue("thumbnail", objectUrl);
+
+      // 3. Hiển thị ảnh preview
+      setPreviewImage(objectUrl);
+
       message.success("Thumbnail selected successfully!");
-    } catch {
+    } catch (err) {
       message.error("Failed to select image");
     }
     return false; // Chặn upload mặc định
@@ -39,34 +36,23 @@ const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
 
   const onOk = async () => {
     try {
-      setLoading(true);
       const vals = await form.validateFields();
 
-      // Tạo course data object
-      const courseData = {
-        title: vals.title,
-        category: vals.category,
-        description: vals.description || "",
-      };
+      // Nếu chưa có ảnh thì dùng ảnh mặc định
+      if (!vals.thumbnail) {
+        vals.thumbnail = "https://placehold.co/600x400?text=No+Image";
+      }
 
-      // Gọi apiService.createCourse() trực tiếp
-      await createCourse(courseData, uploadedFile || undefined);
-
-      message.success("Course created successfully!");
-      onSuccess?.(); // Gọi callback để parent refresh danh sách
+      onCreate(vals);
       handleCancel();
     } catch (error) {
-      console.error("Failed to create course:", error);
-      message.error("Failed to create course");
-    } finally {
-      setLoading(false);
+      console.log("Validate Failed:", error);
     }
   };
 
   const handleCancel = () => {
     form.resetFields();
     setPreviewImage(null);
-    setUploadedFile(null);
     onClose();
   };
 
@@ -78,7 +64,6 @@ const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
       onCancel={handleCancel}
       destroyOnClose
       width={600}
-      okButtonProps={{ loading }}
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -106,24 +91,25 @@ const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
           />
         </Form.Item>
 
-        {/* --- KHU VỰC UPLOAD ẢNH --- */}
-        
-        {/* Field ẩn chứa chuỗi Base64 để gửi đi */}
-        <Form.Item 
-          name="thumbnail" 
-          hidden 
+        {/* --- KHU VỰC UPLOAD ẢNH (SỬA ĐỔI) --- */}
+
+        {/* 1. Field ẩn chứa giá trị thực (URL string) để Form submit đúng */}
+        <Form.Item
+          name="thumbnail"
+          hidden // Ẩn khỏi giao diện
           rules={[{ required: true, message: "Please upload a thumbnail" }]}
         >
-          <Input /> 
+          <Input />
         </Form.Item>
 
+        {/* 2. Giao diện Upload (Không có name="thumbnail" để tránh conflict dữ liệu) */}
         <Form.Item label="Thumbnail" required>
           <Dragger
             accept="image/*"
-            beforeUpload={handleUpload} // Hàm này giờ trả về Base64
+            beforeUpload={handleUpload}
             maxCount={1}
             showUploadList={false}
-            style={{ padding: 20, background: '#fafafa' }}
+            style={{ padding: 20, background: "#fafafa" }}
           >
             {previewImage ? (
               <div className="flex flex-col items-center justify-center">
@@ -148,12 +134,8 @@ const CreateCourseForm = ({ open, onClose, onSuccess }: Props) => {
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
-                <p className="ant-upload-text">
-                  Click or drag file to this area to upload
-                </p>
-                <p className="ant-upload-hint">
-                  Supports: PNG, JPG, JPEG, WEBP
-                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">Supports: PNG, JPG, JPEG, WEBP</p>
               </>
             )}
           </Dragger>

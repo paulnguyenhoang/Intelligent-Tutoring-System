@@ -1,103 +1,95 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Avatar, Button, Card, Empty, List, Tag, Typography } from "antd";
-import { getCourses, getLessons } from "../services/apiService";
-import { PlayCircleOutlined, FileTextOutlined } from "@ant-design/icons";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Avatar, Button, Card, Empty, List, Modal, Tag, Typography } from "antd";
+import {
+  PlayCircleOutlined,
+  FileTextOutlined,
+  FilePdfOutlined,
+  FileWordOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
+import { getCourses } from "../services/courseService";
+import { getLessonsByCourse, type Lesson } from "../services/lessonService";
+import type { Course } from "../types";
+
 const { Title, Paragraph, Text } = Typography;
-
-type MaterialType = "VIDEO" | "TEXT";
-
-interface Material {
-  id: string;
-  title: string;
-  type: MaterialType;
-  uploadedDate: string; // YYYY-MM-DD
-  url: string;
-}
-
-interface Instructor {
-  name: string;
-  avatar?: string;
-}
-
-interface CourseMock {
-  id: string;
-  title: string;
-  description?: string;
-  instructor: Instructor;
-  materials: Material[];
-}
-
-// We'll fetch course metadata and lessons from backend
 
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [course, setCourse] = useState<CourseMock | null>(null);
-  const [materials, setMaterials] = useState<Material[]>([]);
+  const [course, setCourse] = useState<Course | undefined>(undefined);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const courses = await getCourses();
-        const found = courses.find((c: any) => c.id === id);
-        if (found) {
-          setCourse({
-            id: found.id,
-            title: found.title,
-            description: found.description,
-            instructor: { name: typeof found.instructor === "string" ? found.instructor : "Instructor", avatar: undefined },
-            materials: [],
-          });
+    if (id) {
+      // Load course from localStorage
+      const allCourses = getCourses();
+      const foundCourse = allCourses.find((c) => c.id === id);
+      setCourse(foundCourse);
 
-          const lessons = await getLessons(id as string);
-          const mapped: Material[] = lessons.map((l: any) => ({
-            id: l.id,
-            title: l.title,
-            type: l.materials?.type === "VIDEO" || l.type === "VIDEO" ? "VIDEO" : "TEXT",
-            uploadedDate: l.createdDate || l.uploadedDate || "",
-            url: l.materials?.content || l.content || "",
-          }));
-          setMaterials(mapped);
-        }
-      } catch (err) {
-        console.error("Failed to load course details", err);
-      }
-    };
-
-    load();
+      // Load lessons for this course
+      const courseLessons = getLessonsByCourse(id);
+      setLessons(courseLessons);
+    }
   }, [id]);
+
+  const handleOpenLesson = (lesson: Lesson) => {
+    if (lesson.type === "VIDEO") {
+      setCurrentVideoUrl(lesson.content);
+      setVideoModalOpen(true);
+    } else {
+      // For PDF or Word, open in new tab
+      window.open(lesson.content, "_blank");
+    }
+  };
+
+  const renderLessonIcon = (type: Lesson["type"]) => {
+    const size = 28;
+    switch (type) {
+      case "VIDEO":
+        return <PlayCircleOutlined style={{ fontSize: size, color: "#1890ff" }} />;
+      case "PDF":
+        return <FilePdfOutlined style={{ fontSize: size, color: "#f5222d" }} />;
+      case "WORD":
+        return <FileWordOutlined style={{ fontSize: size, color: "#1890ff" }} />;
+      default:
+        return <FileTextOutlined style={{ fontSize: size, color: "#6b7280" }} />;
+    }
+  };
+
+  const getTypeLabel = (type: Lesson["type"]) => {
+    switch (type) {
+      case "VIDEO":
+        return "Video";
+      case "PDF":
+        return "PDF";
+      case "WORD":
+        return "Document";
+      default:
+        return type;
+    }
+  };
 
   if (!course) {
     return (
       <div className="p-6">
-        <Button onClick={() => navigate(-1)} className="mb-4">
-          &larr; Back to Courses
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="mb-4">
+          Back to Courses
         </Button>
         <Card>
-          <Empty description={<span>Course not found</span>} />
+          <Empty description="Course not found" />
         </Card>
       </div>
     );
   }
 
-  const renderIcon = (type: MaterialType) => {
-    const size = 28;
-    switch (type) {
-      case "VIDEO":
-        return <PlayCircleOutlined style={{ fontSize: size, color: "#1890ff" }} />; // blue
-      case "TEXT":
-      default:
-        return <FileTextOutlined style={{ fontSize: size, color: "#6b7280" }} />; // gray
-    }
-  };
-
   return (
     <div className="p-6">
-      <Button onClick={() => navigate(-1)} className="mb-4">
-        &larr; Back to Courses
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="mb-4">
+        Back to Courses
       </Button>
 
       {/* Course Header */}
@@ -108,11 +100,15 @@ export default function CourseDetail() {
               {course.title}
             </Title>
             <div className="flex items-center gap-3 mt-2">
-              <Avatar src={course.instructor.avatar} />
-              <div>
-                <Text strong>{course.instructor.name}</Text>
-                <div className="text-sm text-gray-500">Instructor</div>
-              </div>
+              {course.instructor && (
+                <>
+                  <Avatar src={course.instructor.avatar} />
+                  <div>
+                    <Text strong>{course.instructor.name}</Text>
+                    <div className="text-sm text-gray-500">Instructor</div>
+                  </div>
+                </>
+              )}
             </div>
             {course.description && (
               <Paragraph className="mt-4 text-gray-700">{course.description}</Paragraph>
@@ -121,43 +117,43 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* Materials List */}
+      {/* Lessons List */}
       <Card className="rounded-lg shadow">
         <Title level={4} className="mb-4">
-          Materials
+          Curriculum ({lessons.length} lessons)
         </Title>
 
-        {materials.length === 0 ? (
-          <Empty description={<span>No materials uploaded yet.</span>} />
+        {lessons.length === 0 ? (
+          <Empty description="No lessons uploaded yet." />
         ) : (
           <List
             itemLayout="horizontal"
-            dataSource={materials}
-            renderItem={(item: Material) => (
+            dataSource={lessons}
+            renderItem={(lesson: Lesson, index: number) => (
               <List.Item
-                actions={[
-                  <div className="text-right">
-                    <div className="text-sm text-gray-500">Uploaded: {item.uploadedDate}</div>
-                    <Button
-                      type="primary"
-                      size="small"
-                      onClick={() => window.open(item.url, "_blank")}
-                      className="mt-2"
-                    >
-                      View Material
-                    </Button>
-                  </div>,
-                ]}
-                className="py-4"
+                onClick={() => handleOpenLesson(lesson)}
+                className="py-4 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <List.Item.Meta
-                  avatar={<div className="flex items-center justify-center w-10 h-10">{renderIcon(item.type)}</div>}
+                  avatar={
+                    <div className="flex items-center justify-center w-10 h-10">
+                      {renderLessonIcon(lesson.type)}
+                    </div>
+                  }
                   title={
                     <div className="flex items-center gap-3">
-                      <span className="font-medium text-gray-800">{item.title}</span>
-                      <Tag color={item.type === "VIDEO" ? "blue" : "default"}>
-                        {item.type === "VIDEO" ? "Video" : "Text"}
+                      <span className="font-medium text-gray-800">
+                        {index + 1}. {lesson.title}
+                      </span>
+                      <Tag color={lesson.type === "VIDEO" ? "blue" : "default"}>
+                        {getTypeLabel(lesson.type)}
                       </Tag>
+                    </div>
+                  }
+                  description={
+                    <div className="text-sm text-gray-500">
+                      Duration: {lesson.duration}
+                      {lesson.fileName && ` • ${lesson.fileName}`}
                     </div>
                   }
                 />
@@ -166,6 +162,24 @@ export default function CourseDetail() {
           />
         )}
       </Card>
+
+      {/* Video Player Modal */}
+      <Modal
+        title="Video Lesson"
+        open={videoModalOpen}
+        onCancel={() => {
+          setVideoModalOpen(false);
+          setCurrentVideoUrl(null);
+        }}
+        footer={null}
+        width={800}
+      >
+        {currentVideoUrl && (
+          <div className="aspect-video">
+            <video src={currentVideoUrl} controls className="w-full h-full" />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
